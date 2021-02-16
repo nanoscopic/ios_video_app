@@ -3,26 +3,6 @@
 
 #import "SampleHandler.h"
 //#include "TurboJPEG/libjpeg-turbo/include/turbojpeg.h"
-typedef struct fp_msg_base_s {
-    int type;
-} fp_msg_base;
-
-typedef struct fp_msg_text_s {
-    int type; // 1
-    char *text;
-} fp_msg_text;
-
-typedef struct fp_msg_buffer_s {
-    int type; // 2
-    CMSampleBufferRef sampleBuffer;
-    long frameNum;
-} fp_msg_buffer;
-
-typedef struct fp_msg_port_s {
-    int type; // 3
-    int port;
-    char *ip;
-} fp_msg_port;
 
 fp_msg_text *fp_msg__new_text( char *text ) {
     fp_msg_text *msg = (fp_msg_text *) calloc( sizeof( fp_msg_text ), 1 );
@@ -103,187 +83,264 @@ void discard_buffer( fp_msg_buffer *msg ) {
     CFRelease( msg->sampleBuffer );
 }
 
-void handle_buffer( fp_msg_buffer *msg, nng_socket push, CIContext *context ) {
-    CVImageBufferRef sourcePixelBuffer;
+uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
+    static uint32_t table[256];
+    static int have_table = 0;
+    uint32_t rem;
+    uint8_t octet;
+    int i, j;
+    const char *p, *q;
+ 
+    /* This check is not thread safe; there is no mutex. */
+    if (have_table == 0) {
+        /* Calculate CRC table. */
+        for (i = 0; i < 256; i++) {
+            rem = i;  /* remainder from polynomial division */
+            for (j = 0; j < 8; j++) {
+                if (rem & 1) {
+                    rem >>= 1;
+                    rem ^= 0xedb88320;
+                } else
+                    rem >>= 1;
+            }
+            table[i] = rem;
+        }
+        have_table = 1;
+    }
+ 
+    crc = ~crc;
+    q = buf + len;
+    for (p = buf; p < q; p++) {
+        octet = *p;  /* Cast to unsigned octet. */
+        crc = (crc >> 8) ^ table[(crc & 0xff) ^ octet];
+    }
+    return ~crc;
+}
+
+@implementation ControlThread
+
+-(ControlThread *) init:(int)controlPort framePasser:(FramePasser *)framePasser {
+    self = [super init];
+        
+    _controlPort = controlPort;
+    _framePasser = framePasser;
+    
+    return self;
+}
+
+-(void) dealloc {
+}
+
+-(void) entry:(id)param {
+    /*int res = */nng_rep_open(&_rep);
+    
+    char addr2[50];
+    sprintf( addr2, "tcp://127.0.0.1:%d", _controlPort );
+    nng_setopt_int( _rep, NNG_OPT_SENDBUF, 100000);
+    int listen_error = nng_listen( _rep, addr2, NULL, 0);
+    if( listen_error != 0 ) {
+        NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _controlPort, listen_error );
+    }
+    
+    ujsonin_init();
+    while( 1 ) {
+        nng_msg *nmsg = NULL;
+        nng_recvmsg( _rep, &nmsg, 0 );
+        if( nmsg != NULL  ) {
+            int msgLen = (int) nng_msg_len( nmsg );
+            if( msgLen > 0 ) {
+                char *msg = (char *) nng_msg_body( nmsg );
+                
+                char buffer[20];
+                char *action;
+                
+                if( msg[0] == '{' ) {
+                    int err;
+                    node_hash *root = parse( msg, msgLen, NULL, &err );
+                    jnode *actionJnode = node_hash__get( root, "action", 6 );
+                    if( actionJnode && actionJnode->type == 2 ) {
+                        node_str *actionStrNode = (node_str *) actionJnode;
+                        action = buffer;
+                        sprintf(buffer,"%.*s",actionStrNode->len,actionStrNode->str);
+                    } else {
+                        action = "";
+                    }
+                    node_hash__delete( root );
+                } else {
+                    fp_msg_base *base = ( fp_msg_base * ) msg;
+                    if( base->type == 1 ) {
+                        fp_msg_text *text = ( fp_msg_text * ) base;
+                        action = text->text;
+                    }
+                }
+                if( !strncmp( action, "done", 4 ) ) break;
+                if( !strncmp( action, "start", 5 ) ) {
+                    [_framePasser startSending];
+                }
+                if( !strncmp( action, "stop", 4 ) ) {
+                    [_framePasser stopSending];
+                }
+                if( !strncmp( action, "oneframe", 8 ) ) {
+                    [_framePasser oneFrame];
+                }
+            }
+            else {
+                NSLog(@"xxr empty message");
+            }
+            nng_msg_free( nmsg );
+            
+            fp_msg_text *resp = fp_msg__new_text( "ok" );
+            
+            nng_msg *respN;
+            nng_msg_alloc(&respN, 0);
+            
+            nng_msg_append( respN, resp, sizeof( fp_msg_text ) );
+            nng_sendmsg( _rep, respN, 0 );
+            free( resp );
+            nng_msg_free( respN );
+        }
+    }
+    
+    nng_close( _rep );
+}
+
+@end
+
+@implementation FramePasser
+
+-(FramePasser *) init:(int)inputPort outputIp:(char*)outputIp outputPort:(int)outputPort {
+    self = [super init];
+    _outputIp = outputIp;
+    _outputPort = outputPort;
+    _inputPort = inputPort;
+    _sending = false;
+    _crc = malloc( sizeof( uint32_t ) );
+    *_crc = 0;
+    _crc2 = malloc( sizeof( uint32_t ) );
+    *_crc2 = 0;
+    _forceFrame1 = 0;
+    _forceFrame2 = malloc( sizeof( uint16_t ) );
+    *_forceFrame2 = 0;
+    _w = 0;
+    _h = 0;
+    return self;
+}
+
+-(void) startSending {
+    _sending = true;
+    *_crc = 0;
+    *_crc2 = 0;
+}
+
+-(void) stopSending {
+    _sending = false;
+}
+
+-(void) oneFrame {
+    _forceFrame1++;
+}
+
+-(void) dealloc {
+    if( _outputIp ) {
+        free( _outputIp );
+    }
+    free( _crc );
+    free( _forceFrame2 );
+}
+
+-(void) setupFrameDest {
+    /*int res = */nng_push_open(&_push);
+    
+    if( _outputPort != 0 ) {
+        char addr2[50];
+        sprintf( addr2, "tcp://%s:%d", _outputIp, _outputPort );
+        nng_setopt_int( _push, NNG_OPT_SENDBUF, 100000);
+        int r10 = nng_dial( _push, addr2, NULL, 0);
+        if( r10 != 0 ) {
+            NSLog( @"xxr error connecting to %s : %d - %d", _outputIp, _outputPort, r10 );
+        }
+        _sending = true;
+    } else {
+        char addr2[50];
+        sprintf( addr2, "tcp://127.0.0.1:%d", _inputPort );
+        nng_setopt_int( _push, NNG_OPT_SENDBUF, 100000);
+        int r10 = nng_listen( _push, addr2, NULL, 0);
+        if( r10 != 0 ) {
+            NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _inputPort, r10 );
+        }
+    }
+}
+
+-(void) handle_buffer: (fp_msg_buffer *) msg wContext:(CIContext *)context {
     CIImage *ciImage;
-    UIImage *img;
     
-    sourcePixelBuffer = CMSampleBufferGetImageBuffer( msg->sampleBuffer );
-    
+    CVImageBufferRef sourcePixelBuffer = CMSampleBufferGetImageBuffer( msg->sampleBuffer );
     CFTypeID imageType = CFGetTypeID(sourcePixelBuffer);
 
     if (imageType == CVPixelBufferGetTypeID()) {
-        NSLog( @"xxr pix buf");
-        
         CVPixelBufferRef pixelBuffer;
         @autoreleasepool {
                 
             pixelBuffer = ( CVPixelBufferRef ) sourcePixelBuffer;
             CVPixelBufferLockBaseAddress( pixelBuffer, kCVPixelBufferLock_ReadOnly );
-            int w = (int) CVPixelBufferGetWidth( pixelBuffer );
-            int h = (int) CVPixelBufferGetHeight( pixelBuffer );
             
-            // Resize via vImage
-            /*void *data = CVPixelBufferGetBaseAddress( pixelBuffer );
-            size_t bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
+            //void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
             
-            CVImageBufferRef cvImage;
-            vImage_Buffer inBuff;
-            inBuff.height = h;
-            inBuff.width = w;
-            inbuff.rowBytes = bytesPerRow;
-            inbuff.data = data;
-            
-            size_t destH = 800;
-            float scale = (float) 800 / (float) h;
-            size_t destW = (size_t) ( (float) scale * (float) w );
-            unsigned char *outImg = (unsigned char *) malloc( 4*destW*destH );
-            vImage_Buffer outBuff = { outImg, destH, destW, 4*destW };
-            
-            vImage_Error err = vImageScale_ARGB8888( &inBuff, &outBuff, NULL, 0 );
-            
-            CVPixelBufferRef sizedBuffer = CVPixelBufferCreateWithBytes( );*/
-            
-            /*
-            void *data = CVPixelBufferGetBaseAddress( pixelBuffer );
-            size_t size = CVPixelBufferGetDataSize( pixelBuffer );
-            
-            
-            
-            int qual = MIN(100, MAX(1, (int)(75 * 100)));
-            unsigned char *jpegBuf = NULL;
-            unsigned long jpegSize = 0;
-            int bytesPerRow = (int) CVPixelBufferGetBytesPerRow(pixelBuffer);
-            
-            //unsigned int type = CVPixelBufferGetPixelFormatType( pixelBuffer );
-            //NSLog(@"xxr type: %d", type );
-            // this spits out 420f
-            
-            CVPlanarPixelBufferInfo_YCbCrBiPlanar *bufferInfo = (CVPlanarPixelBufferInfo_YCbCrBiPlanar *)data;
-            uint8_t* cbrBuff = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
-            // This just moved the pointer past the offset
-            uint8_t * baseAddress = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
-            //int bytesPerPixel = 4;
-            
-            size_t destH = 800;
-            float scale = (float) 800 / (float) h;
-            size_t destW = (size_t) ( (float) scale * (float) w );
-            
-            NSLog(@"xxr w: %d, h: %d, num:%ld", destW, destH, msg->frameNum );
-            
-            uint8_t *rgbData =  rgbFromYCrCbBiPlanarFullRangeBuffer(baseAddress,
-                                                                    cbrBuff,
-                                                                    bufferInfo,
-                                                                    w,
-                                                                    h,
-                                                                    bytesPerRow,
-                                                                    destW,
-                                                                    destH );
-            
-            tjhandle handle = tjInitCompress();
-            //int success = tjCompress2(
-            //      handle,
-            //      data,
-            //      (int)w,
-            //      0,
-            //      (int)h,
-            //      TJPF_RGBA,
-            //      &jpegBuf,
-            //      &jpegSize,
-            //      TJSAMP_444,
-            //      qual,
-            //      TJFLAG_FASTDCT
-            //);
-            
-            int _bufferSize = tjBufSize( destW, destH, TJSAMP_420 );
-            jpegBuf = tjAlloc(_bufferSize);
-            
-            int success = tjCompress2(
-                        handle,
-                        rgbData,
-                        destW,
-                        3*destW,//bytesPerRow,
-                        destH,
-                        TJPF_BGR,
-                        &jpegBuf,
-                        &jpegSize,
-                        TJSAMP_420,
-                        qual,
-                        TJFLAG_FASTDCT | TJFLAG_NOREALLOC );
-            NSLog( @"xxr jpeg success %d", success);
-            
-            free( rgbData );
-            */
-            
-            ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer];
-            //CIContext *context = [CIContext context];
-            
-            
-            //CGColorSpaceRef linearColorSpace = CGColorSpaceCreateWithName( kCGColorSpaceLinearSRGB );
-            CGColorSpaceRef deviceRGBColorSpace = CGColorSpaceCreateDeviceRGB();
-            
-            size_t destH = 1000;
-            float scale = (float) destH / (float) h;
-            size_t destW = (size_t) ( (float) scale * (float) w );
-            
-            CIFilter *filter = [CIFilter filterWithName:@"CILanczosScaleTransform"];
-            [filter setValue:ciImage forKey:@"inputImage"];
-            [filter setValue:[[NSNumber alloc] initWithFloat:scale] forKey:@"inputScale"];
-            [filter setValue:@1.0 forKey:@"inputAspectRatio"];
-            CIImage *newImage = filter.outputImage;
-            
-            //NSData *heifData = [context HEIFRepresentationOfImage:ciImage format:kCIFormatRGBA8 colorSpace:linearColorSpace options:@{} ];
-            NSData *jpegData = [context JPEGRepresentationOfImage:newImage colorSpace:deviceRGBColorSpace options:@{}];
-            
-            mynano__send_jpeg( push, (unsigned char *) jpegData.bytes, jpegData.length, w, h, destW, destH );
-            
-            filter = nil;
-            jpegData = nil;
-            ciImage = nil;
-            newImage = nil;
-            
-        }
-        
-        // for turbojpeg method:
-        //mynano__send_jpeg( push, (unsigned char *) jpegBuf, jpegSize, w, h, destW, destH );
-        //tjFree( jpegBuf );
-        //tjDestroy(handle);
-        //CVPixelBufferUnlockBaseAddress( pixelBuffer, kCVPixelBufferLock_ReadOnly );
-        
-        /*CVPixelBufferRef buf2;
-        CVPixelBufferCreateWithBytes(
-                                     kCFAllocatorDefault,
-                                     1334,
-                                     750,
-                                     CVPixelBufferGetPixelFormatType( pixelBuffer ),
-                                     data,
-                                     CVPixelBufferGetBytesPerRow( pixelBuffer ),
-                                     NULL, NULL, NULL,
-                                     &buf2
-                                     );*/
+            if( !_w ) {
+                _w = (int) CVPixelBufferGetWidth( pixelBuffer );
+                _h = (int) CVPixelBufferGetHeight( pixelBuffer );
                 
-        
-        //CVPixelBufferRef pixelFormat = CVPixelBufferGetPixelFormatType( sourcePixelBuffer );
-        //int ciImage = [CIImage sourcePixelBuffer ];
-        
-        
-        // (id)kCIImageRepresentationPortraitEffectsMatteImage: semanticSegmentationMatteImage
-        
-        //NSLog( @"xxr ciimage");
-        
-        //size_t w = CVImageBufferGe(ciImage);
-        //size_t h = CGImageGetHeight(ciImage);
-        
-        /*img = [[UIImage alloc] initWithCIImage: ciImage ];
-        NSLog( @"xxr uiimage");
-        int w = img.size.width * img.scale;
-        int h = img.size.height * img.scale;
-        
-        NSData *jpegData = [UIImage dataUsingTurboJpegWithImage:img jpegQual:0.75];
-        NSLog( @"xxr made jpeg");
-        //mynano__send_jpeg( push, (unsigned char *) jpegData.bytes, jpegData.length, w, h, w, h );
-        NSLog(@"xxr w: %d, h: %d, num:%ld jlen:%d", w, h, msg->frameNum, (int) jpegData.length );
-        CFRelease( msg->sampleBuffer );*/
+                _destH = 1000;
+                _scale = (float) _destH / (float) _h;
+                _destW = (size_t) ( (float) _scale * (float) _w );
+                
+                _ciFilter = [CIFilter filterWithName:@"CILanczosScaleTransform"];
+                [_ciFilter setValue:[[NSNumber alloc] initWithFloat:_scale] forKey:@"inputScale"];
+                [_ciFilter setValue:@1.0 forKey:@"inputAspectRatio"];
+            }
+            
+            uint32_t newCrc = 0;
+            //NSLog( @"xxr test8" );
+            size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
+            //NSLog( @"xxs planes:%d", planeCount );
+            for( int i=0;i<planeCount;i++ ) {
+                size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
+                void *planeBase = CVPixelBufferGetBaseAddressOfPlane( pixelBuffer, i );
+                size_t planeH = CVPixelBufferGetHeightOfPlane( pixelBuffer, i );
+                //size_t bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
+                size_t barSize = 50*bytes;
+                newCrc = crc32( newCrc, (const char *) planeBase + barSize, bytes*planeH - barSize );
+            }
+            
+            bool force = false;
+            
+            if( _forceFrame1 != *_forceFrame2 ) {
+                *_forceFrame2 = _forceFrame1;
+                force = true;
+            }
+            
+            if( force || ( *_crc != newCrc && *_crc2 != newCrc ) ) {
+                *_crc2 = *_crc;
+                *_crc = newCrc;
+                ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer];
+                
+                //CGColorSpaceRef linearColorSpace = CGColorSpaceCreateWithName( kCGColorSpaceLinearSRGB );
+                CGColorSpaceRef deviceRGBColorSpace = CGColorSpaceCreateDeviceRGB();
+                                
+                [_ciFilter setValue:ciImage forKey:@"inputImage"];
+                CIImage *newImage = _ciFilter.outputImage;
+                
+                //NSData *heifData = [context HEIFRepresentationOfImage:ciImage format:kCIFormatRGBA8 colorSpace:linearColorSpace options:@{} ];
+                NSData *jpegData = [context JPEGRepresentationOfImage:newImage colorSpace:deviceRGBColorSpace options:@{}];
+                
+                mynano__send_jpeg( _push, (unsigned char *) jpegData.bytes, jpegData.length, _w, _h, (int) _destW, (int) _destH );
+                
+                //filter = nil;
+                jpegData = nil;
+                ciImage = nil;
+                newImage = nil;
+            }
+        }
         
         CVPixelBufferUnlockBaseAddress( pixelBuffer, kCVPixelBufferLock_ReadOnly );
         CFRelease( msg->sampleBuffer );
@@ -293,113 +350,13 @@ void handle_buffer( fp_msg_buffer *msg, nng_socket push, CIContext *context ) {
     }
     
     ciImage = nil;
-    img = nil;
 }
 
-@interface FramePasser : NSObject
-
--(FramePasser *)init;
--(void)dealloc;
--(void)myThread:(id)param;
-@property CIContext *context;
-@property int frameDestPort;
-@property char *frameDestIp;
-@property bool destSocketSetup;
-@property nng_socket push;
-@end
-
-@implementation FramePasser
-
--(FramePasser *) init {
-    self = [super init];
-    _destSocketSetup = false;
-    _frameDestIp = nil;
-    _frameDestPort = 0;
-    
-    return self;
+-(void) noframes {
+    mynano__send_text( _push, "noframes" );
 }
 
--(void) dealloc {
-    if( _frameDestIp ) {
-        free( _frameDestIp );
-    }
-}
-
--(void) setupFrameDest {
-    //nng_socket push;
-    int res = nng_push_open(&_push);
-    char addr2[50];
-    sprintf( addr2, "tcp://%s:%d", _frameDestIp, _frameDestPort );
-    nng_setopt_int( _push, NNG_OPT_SENDBUF, 100000);
-    int r10 = nng_dial( _push, addr2, NULL, 0);
-    if( r10 != 0 ) {
-        NSLog( @"xxr error connecting to %s : %d - %d", _frameDestIp, _frameDestPort, r10 );
-    }
-    _destSocketSetup = true;
-}
-
-- (void) handleData:(const char*)dataBytes withLength:(long)dataSize
-{
-    //const char* dataBytes = [data bytes];
-    //size_t dataSize = [data length];
-    ujsonin_init();
-    int err;
-    node_hash *root = parse( (char *) dataBytes, (int) dataSize, NULL, &err );
-    jnode *port = node_hash__get( root, "port", 4 );
-    jnode *ip = node_hash__get( root, "ip", 2 );
-    if( port->type == 2 && ip->type == 2 ) {
-        node_str *strOb = (node_str *) port;
-        char buffer[20];
-        sprintf(buffer,"%.*s",strOb->len,strOb->str);
-        int portNum = atoi( buffer );
-        
-        node_str *ipOb = ( node_str * ) ip;
-        sprintf(buffer,"%.*s",ipOb->len,ipOb->str);
-        char *ipDup = strdup( buffer );
-        
-        /*fp_msg_port *msgt = fp_msg__new_port( portNum, ipDup );
-        
-        nng_msg *msg;
-        nng_msg_alloc(&msg, 0);
-        
-        nng_msg_append( msg, msgt, sizeof( fp_msg_text ) );
-        int r5 = nng_sendmsg( _pushF, msg, 0 );
-        nng_msg_free( msg );*/
-        _frameDestIp = ipDup;
-        _frameDestPort = portNum;
-        NSLog( @"xxr sending to %s : %d", _frameDestIp, _frameDestPort );
-        [self setupFrameDest];
-    }
-    //jnode__dump( (jnode *) root, 0 );
-    node_hash__delete( root );
-    
-}
-
-/*- (void) readCompletionNotification:(NSNotification*)notification
-{
-    NSLog( @"xxr read handler" );
-    NSFileHandle* handle = [notification object];
-    NSDictionary* userInfo = [notification userInfo];
-
-    NSData* readData = [userInfo valueForKey:NSFileHandleNotificationDataItem];
-    NSNumber* error = [userInfo valueForKey:@"NSFileHandleError"];
-    int errorCode = [error intValue];
-    size_t cbRead = [readData length];
-    NSLog( @"xxr config %s", readData.bytes );
-    //LogMsg("readCompletionNotification: %li bytes, error: %u", cbRead, errorCode);
-    
-    if (errorCode == 0 && cbRead != 0) {
-        [self handleData:readData];
-        //[handle readInBackgroundAndNotify];
-    } else {
-        //LogMsg("readCompletionNotification: closing tty!");
-        NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-        [nc removeObserver:self name:NSFileHandleReadCompletionNotification object:handle];
-        //LogMsg("readCompletionNotification: handle retain count is %u",
-    }
-}*/
-
--(void) myThread:(id)param {
+-(void) entry:(id)param {
     nng_socket pullF;
     
     CIContext *context = [CIContext contextWithOptions:@{ kCIContextWorkingFormat: @(kCIFormatRGBAh) }];
@@ -408,83 +365,26 @@ void handle_buffer( fp_msg_buffer *msg, nng_socket push, CIContext *context ) {
     printf( "r1 %d", r1 );
     const char *addr = "inproc://frames";
     nng_setopt_int( pullF, NNG_OPT_RECVBUF, 100000);
+    
+    // If we don't receive any images for 100ms; it is likely that a system
+    // dialog box is being shown.
+    nng_setopt_int( pullF, NNG_OPT_RECVTIMEO, 100);
+    
     nng_dial( pullF, addr, NULL, 0 );
     
-    if( _frameDestPort != 0 ) {
-        [self setupFrameDest];
-    }
+    [self setupFrameDest];
     
-    // Read configuration if it exists
-    /*NSString *documentsDirectory = [
-        NSSearchPathForDirectoriesInDomains (NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0
-    ];*/
-    NSFileManager *fileMan = [NSFileManager defaultManager];
-    
-    //NSURL *docDir = [[fileMan URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-    //NSURL *confFile = [docDir URLByAppendingPathComponent:@"config.json"];
-    NSURL *sharedUrl = [fileMan containerURLForSecurityApplicationGroupIdentifier:@"group.com.dryark.vidtest"];
-    NSURL *confFile = [sharedUrl URLByAppendingPathComponent:@"config.json"];
-    
-    //NSString *fileName = [documentsDirectory stringByAppendingPathComponent:@"config.json"];
-
-    char addr2[100];
-    NSError *err;
-    //if( [[NSFileManager defaultManager] fileExistsAtPath:fileName] ) {
-    if ([confFile checkResourceIsReachableAndReturnError:&err] != NO) {
-        NSLog( @"xxr config reachable" );
-        //NSFileHandle *file = [NSFileHandle fileHandleForReadingAtPath:fileName];
-        //NSFileHandle *file = [NSFileHandle fileHandleForWritingToURL:confFile error:&err];
-        
-        /*NSFileHandle *file = [NSFileHandle fileHandleForReadingFromURL:confFile error:&err];
-        if( err != nil ) {
-            NSLog( @"xxr config read err", err );
-        }
-        NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-        [nc
-            addObserver:self
-            selector:@selector(readCompletionNotification:)
-            name:NSFileHandleReadCompletionNotification
-            object:file
-        ];
-        
-        [file readInBackgroundAndNotify];*/
-        NSString *confPath = [confFile absoluteString];
-        const char *cPath = [confPath UTF8String];
-        NSLog( @"xxr config path %s", cPath );
-        FILE *fh = fopen( &cPath[7], "r" );
-        
-        fseek(fh, 0, SEEK_END);
-        long fsize = ftell(fh);
-        fseek(fh, 0, SEEK_SET);  /* same as rewind(f); */
-
-        char *string = malloc(fsize + 1);
-        fread(string, 1, fsize, fh);
-        
-        NSLog( @"xxr config %s", string);
-        [self handleData:string withLength:fsize];
-        
-        fclose( fh );
-        
-        string[fsize] = 0;
-    } else {
-        NSString *devName = [[UIDevice currentDevice] name];
-        NSDictionary *devToPort = @{
-            @"A":@7879,
-            @"B":@7880,
-            @"C":@7881,
-            @"D":@7883
-        };
-        sprintf( addr2, "tcp://10.0.0.6:%ld", [devToPort[ devName ] integerValue] );
-    }
-    
-    //NSLog( @"xxr sending to %s", addr2 );
-    
-    
+    bool noFrames = false;
     while( 1 ) {
-        nng_msg *msg;
-        int r2 = nng_recvmsg( pullF, &msg, 0 );
-        NSLog( @"xxr r2 %d", r2 );
-        if( msg != NULL  ) {
+        nng_msg *msg = NULL;
+        int recv_err = nng_recvmsg( pullF, &msg, 0 );
+        if( recv_err == NNG_ETIMEDOUT ) {
+            if( !noFrames ) {
+                noFrames = true;
+                [self noframes];
+            }
+        }
+        else if( msg != NULL  ) {
             if( nng_msg_len( msg ) > 0 ) {
                 fp_msg_base *base = (fp_msg_base *) nng_msg_body( msg );
                 if( base->type == 1 ) {
@@ -493,20 +393,16 @@ void handle_buffer( fp_msg_buffer *msg, nng_socket push, CIContext *context ) {
                     if( !strncmp( text->text, "done", 4 ) ) break;
                 } else if( base->type == 2 ) {
                     fp_msg_buffer *buffer = ( fp_msg_buffer * ) base;
-                    NSLog(@"xxr Received buffer" );
-                    if( _destSocketSetup == true ) {
-                        handle_buffer( buffer, _push, context );
-                    } else {
-                        discard_buffer( buffer );
-                    }
+                    if( noFrames ) noFrames = false;
+                    if( _sending ) [self handle_buffer:buffer wContext:context];
+                    else discard_buffer( buffer );
                 } else if( base->type == 3 ) {
-                    fp_msg_port *port = ( fp_msg_port * ) base;
-                    _frameDestIp = port->ip;
-                    _frameDestPort = port->port;
-                    NSLog( @"xxr sending to %s : %d", _frameDestIp, _frameDestPort );
+                    //fp_msg_port *port = ( fp_msg_port * ) base;
+                    //_frameDestIp = port->ip;
+                    //_frameDestPort = port->port;
+                    //NSLog( @"xxr sending to %s : %d", _frameDestIp, _frameDestPort );
                     [self setupFrameDest];
                 }
-                //free( base );
             }
             else {
                 NSLog(@"xxr empty message");
@@ -525,16 +421,83 @@ void handle_buffer( fp_msg_buffer *msg, nng_socket push, CIContext *context ) {
 
 - (void)broadcastStartedWithSetupInfo:(NSDictionary<NSString *,NSObject *> *)setupInfo {
     // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-    int r4 = nng_push_open(&_pushF);
-    NSLog( @"xxr r4 %d", r4 );
+    nng_push_open(&_pushF);
     const char *addr = "inproc://frames";
     nng_setopt_int(_pushF, NNG_OPT_SENDBUF, 100000);
-    int r3 = nng_listen( _pushF, addr, NULL, 0 );
-    NSLog( @"xxr r1 %d", r3 );
+    nng_listen( _pushF, addr, NULL, 0 );
     
-    _framePasserInst = [[FramePasser alloc] init];
+    [self readConfig];
     
-    [NSThread detachNewThreadSelector:@selector(myThread:) toTarget:_framePasserInst withObject:nil];
+    _framePasserInst = [[FramePasser alloc] init:_inputPort outputIp:_outputIp outputPort:_outputPort];
+    
+    [NSThread detachNewThreadSelector:@selector(entry:) toTarget:_framePasserInst withObject:nil];
+    
+    if( _controlPort ) {
+        _controlThreadInst = [[ControlThread alloc] init:_controlPort framePasser:_framePasserInst];
+        [NSThread detachNewThreadSelector:@selector(entry:) toTarget:_controlThreadInst withObject:nil];
+    }
+    
+    _msgBuffer.type = 2;
+}
+
+- (void)readConfig {
+    // Read configuration if it exists
+    /*NSFileManager *fileMan = [NSFileManager defaultManager];
+    
+    NSURL *sharedUrl = [fileMan containerURLForSecurityApplicationGroupIdentifier:@"group.com.dryark.vidtest"];
+    NSURL *confFile = [sharedUrl URLByAppendingPathComponent:@"config.json"];
+    
+    NSError *err;
+    if ([confFile checkResourceIsReachableAndReturnError:&err] != NO) {
+        NSLog( @"xxr config reachable" );
+        
+        NSString *confPath = [confFile absoluteString];
+        const char *cPath = [confPath UTF8String];
+        NSLog( @"xxr config path %s", cPath );
+        FILE *fh = fopen( &cPath[7], "r" );
+        
+        fseek(fh, 0, SEEK_END);
+        long fsize = ftell(fh);
+        fseek(fh, 0, SEEK_SET);  // same as rewind(f);
+
+        char *string = malloc(fsize + 1);
+        fread(string, 1, fsize, fh);
+        string[fsize] = 0;
+        
+        NSLog( @"xxr config %s", string);
+        [self handleConfig:string withLength:fsize];
+        
+        fclose( fh );
+    } else {*/
+        _outputPort = 0;
+        _outputIp = nil;
+        _controlPort = 8351;
+        _inputPort = 8352;
+    //}
+}
+
+- (void) handleConfig:(const char*)dataBytes withLength:(long)dataSize
+{
+    ujsonin_init();
+    int err;
+    node_hash *root = parse( (char *) dataBytes, (int) dataSize, NULL, &err );
+    jnode *port = node_hash__get( root, "port", 4 );
+    jnode *ip = node_hash__get( root, "ip", 2 );
+    if( port->type == 2 && ip->type == 2 ) {
+        node_str *strOb = (node_str *) port;
+        char buffer[20];
+        sprintf(buffer,"%.*s",strOb->len,strOb->str);
+        int portNum = atoi( buffer );
+        
+        node_str *ipOb = ( node_str * ) ip;
+        sprintf(buffer,"%.*s",ipOb->len,ipOb->str);
+        char *ipDup = strdup( buffer );
+        
+        _outputIp = ipDup;
+        _outputPort = portNum;
+        NSLog( @"xxr sending to %s : %d", _outputIp, _outputPort );
+    }
+    node_hash__delete( root );
 }
 
 - (void)broadcastPaused {
@@ -553,21 +516,50 @@ void handle_buffer( fp_msg_buffer *msg, nng_socket push, CIContext *context ) {
     
     nng_msg *msg;
     nng_msg_alloc(&msg, 0);
-    
     nng_msg_append( msg, msgt, sizeof( fp_msg_text ) );
-    int r5 = nng_sendmsg( _pushF, msg, 0 );
-    NSLog( @"xxr r5 %d", r5 );
+    free( msgt );
+    nng_sendmsg( _pushF, msg, 0 );
     nng_msg_free( msg );
     
     nng_close( _pushF );
     
     _framePasserInst = nil;
-        
-    //nng_close(_push);
+    
+    // stop the control thread
+    
+    nng_socket reqC;
+    
+    // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
+    nng_req_open(&reqC);
+    
+    char addr2[50];
+    sprintf( addr2, "tcp://127.0.0.1:%d", _controlPort );
+    
+    nng_setopt_int(reqC, NNG_OPT_SENDBUF, 1000);
+    nng_dial( reqC, addr2, NULL, 0 );
+    
+    fp_msg_text *msgt2 = fp_msg__new_text( "done" );
+    
+    nng_msg *msg2;
+    nng_msg_alloc(&msg2, 0);
+    
+    nng_msg_append( msg2, msgt2, sizeof( fp_msg_text ) );
+    nng_sendmsg( reqC, msg2, 0 );
+    free( msgt2 );
+    nng_msg_free( msg2 );
+    
+    nng_close( reqC );
+    
+    _controlThreadInst = nil;
+}
+
+void mynano__send_text( nng_socket push, const char *text ) {
+    char buffer[50];
+    sprintf( buffer, "{msg:\"%s\"}\n", text );
+    nng_send( push, (void *) buffer, strlen( buffer ), 0 );
 }
 
 void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long dataLen, int ow, int oh, int dw, int dh ) {
-    
     char buffer[200];
     
     int jlen = snprintf( buffer, 200, "{\"ow\":%i,\"oh\":%i,\"dw\":%i,\"dh\":%i}", ow, oh, dw, dh );
@@ -575,13 +567,9 @@ void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long data
     char *both = malloc( totlen );
     memcpy( both, buffer, jlen );
     memcpy( &both[jlen], data, dataLen );
-    //mynano__send( n, both, totlen );
     int res = nng_send( push, both, totlen, 0 );
     if( res != 0 ) {
         NSLog(@"xxr Send failed; res=%d", res );
-    }
-    else {
-        NSLog(@"xxr Sent" );
     }
     
     free( both );
@@ -594,18 +582,16 @@ void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long data
             if( ( _frameNum % 3 ) == 0 ) {
                 @autoreleasepool {
                     CFRetain( sampleBuffer);
-                    // Handle video sample buffer
                     
-                    fp_msg_buffer *bmsg = fp_msg__new_buffer( sampleBuffer, _frameNum );
-                    
+                    //fp_msg_buffer *bmsg = fp_msg__new_buffer( sampleBuffer, _frameNum );
+                    _msgBuffer.sampleBuffer = sampleBuffer;
+                    _msgBuffer.frameNum = _frameNum;
                     nng_msg *msg;
                     nng_msg_alloc(&msg, 0);
-                    int r8 = nng_msg_append( msg, bmsg, sizeof( fp_msg_buffer ) );
-                    NSLog( @"xxr r8 %d", r8 );
-                    int r6 = nng_sendmsg( _pushF, msg, 0 );
-                    NSLog( @"xxr r6 %d", r6 );
+                    nng_msg_append( msg, &_msgBuffer, sizeof( fp_msg_buffer ) );
+                    nng_sendmsg( _pushF, msg, 0 );
+                    //free( bmsg );
                     //nng_msg_free( msg );
-                  
                 }
             }
             break;
