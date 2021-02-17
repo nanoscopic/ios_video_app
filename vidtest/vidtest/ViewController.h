@@ -6,7 +6,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#include "../vidtest2/ujsonin/ujsonin.h"
 
 @interface ViewController : UIViewController
 

@@ -2,7 +2,6 @@
 // Anti-Corruption License
 
 #import "SampleHandler.h"
-//#include "TurboJPEG/libjpeg-turbo/include/turbojpeg.h"
 
 fp_msg_text *fp_msg__new_text( char *text ) {
     fp_msg_text *msg = (fp_msg_text *) calloc( sizeof( fp_msg_text ), 1 );
@@ -27,56 +26,6 @@ fp_msg_buffer *fp_msg__new_buffer( CMSampleBufferRef sampleBuffer, long frameNum
     return msg;
 }
 
-#define clamp(a) (a > 255 ? 255 : (a < 0 ? 0 : a));
-
-uint8_t * rgbFromYCrCbBiPlanarFullRangeBuffer(uint8_t *inBaseAddress,
-                                              uint8_t *cbCrBuffer,
-                                              CVPlanarPixelBufferInfo_YCbCrBiPlanar * inBufferInfo,
-                                              size_t srcWidth,
-                                              size_t srcHeight,
-                                              size_t inputBufferBytesPerRow,
-                                              size_t destWidth,
-                                              size_t destHeight )
-{
-    int bytesPerPixel = 3;
-    NSUInteger yPitch = CFSwapInt32BigToHost( inBufferInfo->componentInfoY.rowBytes ); //EndianU32_BtoN(inBufferInfo->componentInfoY.rowBytes);
-    uint8_t *rgbBuffer = (uint8_t *)malloc(destWidth * destHeight * bytesPerPixel);
-    NSUInteger cbCrPitch = CFSwapInt32BigToHost( inBufferInfo->componentInfoCbCr.rowBytes ); //EndianU32_BtoN(inBufferInfo->componentInfoCbCr.rowBytes);
-    uint8_t *yBuffer = (uint8_t *)inBaseAddress;
-
-    float scale = (float) destHeight / (float) srcHeight;
-    
-    for(int destY = 0; destY < destHeight; destY++)
-    {
-        size_t srcY = (int) ( (float) destY / scale );
-        
-        uint8_t *rgbBufferLine = &rgbBuffer[destY * destWidth * bytesPerPixel];
-        uint8_t *yBufferLine = &yBuffer[srcY * yPitch];
-        uint8_t *cbCrBufferLine = &cbCrBuffer[(srcY >> 1) * cbCrPitch];
-        for(int destX = 0; destX < destWidth; destX++)
-        {
-            size_t srcX = (int) ( (float) destX / scale );
-            int16_t y = yBufferLine[srcX];
-            int16_t cb = cbCrBufferLine[srcX & ~1] - 128;
-            int16_t cr = cbCrBufferLine[srcX | 1] - 128;
-
-            uint8_t *rgbOutput = &rgbBufferLine[destX*bytesPerPixel];
-
-            int16_t r = (int16_t)roundf( y + cr *  1.4 );
-            int16_t g = (int16_t)roundf( y + cb * -0.343 + cr * -0.711 );
-            int16_t b = (int16_t)roundf( y + cb *  1.765);
-
-            // ABGR image representation
-            //rgbOutput[0] = 0Xff;
-            rgbOutput[0] = clamp(b);
-            rgbOutput[1] = clamp(g);
-            rgbOutput[2] = clamp(r);
-        }
-    }
-
-    return rgbBuffer;
-}
-
 #import<Accelerate/Accelerate.h>
 
 void discard_buffer( fp_msg_buffer *msg ) {
@@ -91,17 +40,15 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     int i, j;
     const char *p, *q;
  
-    /* This check is not thread safe; there is no mutex. */
-    if (have_table == 0) {
-        /* Calculate CRC table. */
+    if( have_table == 0 ) {
         for (i = 0; i < 256; i++) {
             rem = i;  /* remainder from polynomial division */
             for (j = 0; j < 8; j++) {
                 if (rem & 1) {
                     rem >>= 1;
                     rem ^= 0xedb88320;
-                } else
-                    rem >>= 1;
+                }
+                else rem >>= 1;
             }
             table[i] = rem;
         }
@@ -111,7 +58,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     crc = ~crc;
     q = buf + len;
     for (p = buf; p < q; p++) {
-        octet = *p;  /* Cast to unsigned octet. */
+        octet = *p; /* Cast to unsigned octet. */
         crc = (crc >> 8) ^ table[(crc & 0xff) ^ octet];
     }
     return ~crc;
@@ -132,7 +79,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
 }
 
 -(void) entry:(id)param {
-    /*int res = */nng_rep_open(&_rep);
+    nng_rep_open(&_rep);
     
     char addr2[50];
     sprintf( addr2, "tcp://127.0.0.1:%d", _controlPort );
@@ -162,7 +109,8 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                         node_str *actionStrNode = (node_str *) actionJnode;
                         action = buffer;
                         sprintf(buffer,"%.*s",actionStrNode->len,actionStrNode->str);
-                    } else {
+                    }
+                    else {
                         action = "";
                     }
                     node_hash__delete( root );
@@ -174,15 +122,9 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                     }
                 }
                 if( !strncmp( action, "done", 4 ) ) break;
-                if( !strncmp( action, "start", 5 ) ) {
-                    [_framePasser startSending];
-                }
-                if( !strncmp( action, "stop", 4 ) ) {
-                    [_framePasser stopSending];
-                }
-                if( !strncmp( action, "oneframe", 8 ) ) {
-                    [_framePasser oneFrame];
-                }
+                if( !strncmp( action, "start", 5 ) ) [_framePasser startSending];
+                if( !strncmp( action, "stop", 4 ) ) [_framePasser stopSending];
+                if( !strncmp( action, "oneframe", 8 ) ) [_framePasser oneFrame];
             }
             else {
                 NSLog(@"xxr empty message");
@@ -249,7 +191,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
 }
 
 -(void) setupFrameDest {
-    /*int res = */nng_push_open(&_push);
+    nng_push_open(&_push);
     
     if( _outputPort != 0 ) {
         char addr2[50];
@@ -284,8 +226,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
             pixelBuffer = ( CVPixelBufferRef ) sourcePixelBuffer;
             CVPixelBufferLockBaseAddress( pixelBuffer, kCVPixelBufferLock_ReadOnly );
             
-            //void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
-            
             if( !_w ) {
                 _w = (int) CVPixelBufferGetWidth( pixelBuffer );
                 _h = (int) CVPixelBufferGetHeight( pixelBuffer );
@@ -300,14 +240,11 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
             }
             
             uint32_t newCrc = 0;
-            //NSLog( @"xxr test8" );
             size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
-            //NSLog( @"xxs planes:%d", planeCount );
             for( int i=0;i<planeCount;i++ ) {
                 size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
                 void *planeBase = CVPixelBufferGetBaseAddressOfPlane( pixelBuffer, i );
                 size_t planeH = CVPixelBufferGetHeightOfPlane( pixelBuffer, i );
-                //size_t bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
                 size_t barSize = 50*bytes;
                 newCrc = crc32( newCrc, (const char *) planeBase + barSize, bytes*planeH - barSize );
             }
@@ -335,7 +272,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 
                 mynano__send_jpeg( _push, (unsigned char *) jpegData.bytes, jpegData.length, _w, _h, (int) _destW, (int) _destH );
                 
-                //filter = nil;
                 jpegData = nil;
                 ciImage = nil;
                 newImage = nil;
@@ -366,8 +302,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     const char *addr = "inproc://frames";
     nng_setopt_int( pullF, NNG_OPT_RECVBUF, 100000);
     
-    // If we don't receive any images for 100ms; it is likely that a system
-    // dialog box is being shown.
+    // If we don't receive any images for 100ms; then we are in trouble...
     nng_setopt_int( pullF, NNG_OPT_RECVTIMEO, 100);
     
     nng_dial( pullF, addr, NULL, 0 );
@@ -396,12 +331,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                     if( noFrames ) noFrames = false;
                     if( _sending ) [self handle_buffer:buffer wContext:context];
                     else discard_buffer( buffer );
-                } else if( base->type == 3 ) {
-                    //fp_msg_port *port = ( fp_msg_port * ) base;
-                    //_frameDestIp = port->ip;
-                    //_frameDestPort = port->port;
-                    //NSLog( @"xxr sending to %s : %d", _frameDestIp, _frameDestPort );
-                    [self setupFrameDest];
                 }
             }
             else {
@@ -420,7 +349,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
 @implementation SampleHandler
 
 - (void)broadcastStartedWithSetupInfo:(NSDictionary<NSString *,NSObject *> *)setupInfo {
-    // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
     nng_push_open(&_pushF);
     const char *addr = "inproc://frames";
     nng_setopt_int(_pushF, NNG_OPT_SENDBUF, 100000);
@@ -441,75 +369,19 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
 }
 
 - (void)readConfig {
-    // Read configuration if it exists
-    /*NSFileManager *fileMan = [NSFileManager defaultManager];
-    
-    NSURL *sharedUrl = [fileMan containerURLForSecurityApplicationGroupIdentifier:@"group.com.dryark.vidtest"];
-    NSURL *confFile = [sharedUrl URLByAppendingPathComponent:@"config.json"];
-    
-    NSError *err;
-    if ([confFile checkResourceIsReachableAndReturnError:&err] != NO) {
-        NSLog( @"xxr config reachable" );
-        
-        NSString *confPath = [confFile absoluteString];
-        const char *cPath = [confPath UTF8String];
-        NSLog( @"xxr config path %s", cPath );
-        FILE *fh = fopen( &cPath[7], "r" );
-        
-        fseek(fh, 0, SEEK_END);
-        long fsize = ftell(fh);
-        fseek(fh, 0, SEEK_SET);  // same as rewind(f);
-
-        char *string = malloc(fsize + 1);
-        fread(string, 1, fsize, fh);
-        string[fsize] = 0;
-        
-        NSLog( @"xxr config %s", string);
-        [self handleConfig:string withLength:fsize];
-        
-        fclose( fh );
-    } else {*/
-        _outputPort = 0;
-        _outputIp = nil;
-        _controlPort = 8351;
-        _inputPort = 8352;
-    //}
-}
-
-- (void) handleConfig:(const char*)dataBytes withLength:(long)dataSize
-{
-    ujsonin_init();
-    int err;
-    node_hash *root = parse( (char *) dataBytes, (int) dataSize, NULL, &err );
-    jnode *port = node_hash__get( root, "port", 4 );
-    jnode *ip = node_hash__get( root, "ip", 2 );
-    if( port->type == 2 && ip->type == 2 ) {
-        node_str *strOb = (node_str *) port;
-        char buffer[20];
-        sprintf(buffer,"%.*s",strOb->len,strOb->str);
-        int portNum = atoi( buffer );
-        
-        node_str *ipOb = ( node_str * ) ip;
-        sprintf(buffer,"%.*s",ipOb->len,ipOb->str);
-        char *ipDup = strdup( buffer );
-        
-        _outputIp = ipDup;
-        _outputPort = portNum;
-        NSLog( @"xxr sending to %s : %d", _outputIp, _outputPort );
-    }
-    node_hash__delete( root );
+    _outputPort = 0;
+    _outputIp = nil;
+    _controlPort = 8351;
+    _inputPort = 8352;
 }
 
 - (void)broadcastPaused {
-    // User has requested to pause the broadcast. Samples will stop being delivered.
 }
 
 - (void)broadcastResumed {
-    // User has requested to resume the broadcast. Samples delivery will resume.
 }
 
 - (void)broadcastFinished {
-    // User has requested to finish the broadcast.
     _started = 0;
     
     fp_msg_text *msgt = fp_msg__new_text( "done" );
@@ -529,7 +401,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     
     nng_socket reqC;
     
-    // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
     nng_req_open(&reqC);
     
     char addr2[50];
@@ -568,9 +439,7 @@ void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long data
     memcpy( both, buffer, jlen );
     memcpy( &both[jlen], data, dataLen );
     int res = nng_send( push, both, totlen, 0 );
-    if( res != 0 ) {
-        NSLog(@"xxr Send failed; res=%d", res );
-    }
+    if( res != 0 ) NSLog(@"xxr Send failed; res=%d", res );
     
     free( both );
 }
@@ -583,27 +452,18 @@ void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long data
                 @autoreleasepool {
                     CFRetain( sampleBuffer);
                     
-                    //fp_msg_buffer *bmsg = fp_msg__new_buffer( sampleBuffer, _frameNum );
                     _msgBuffer.sampleBuffer = sampleBuffer;
                     _msgBuffer.frameNum = _frameNum;
                     nng_msg *msg;
                     nng_msg_alloc(&msg, 0);
                     nng_msg_append( msg, &_msgBuffer, sizeof( fp_msg_buffer ) );
                     nng_sendmsg( _pushF, msg, 0 );
-                    //free( bmsg );
-                    //nng_msg_free( msg );
                 }
             }
             break;
-        case RPSampleBufferTypeAudioApp:
-            // Handle audio sample buffer for app audio
-            break;
-        case RPSampleBufferTypeAudioMic:
-            // Handle audio sample buffer for mic audio
-            break;
-            
-        default:
-            break;
+        case RPSampleBufferTypeAudioApp: break;
+        case RPSampleBufferTypeAudioMic: break;
+        default:                         break;
     }
 }
 

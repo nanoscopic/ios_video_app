@@ -673,7 +673,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = vidtest/vidtest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = vidtest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -693,7 +693,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = vidtest/vidtest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = vidtest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -828,8 +828,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = vidtest2/vidtest2.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = vidtest2/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -840,7 +841,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/vidtest2",
-					"$(PROJECT_DIR)/vidtest2/TurboJPEG/libjpeg-turbo/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -853,8 +853,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = vidtest2/vidtest2.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = vidtest2/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -865,10 +866,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/vidtest2",
-					"$(PROJECT_DIR)/vidtest2/TurboJPEG/libjpeg-turbo/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
