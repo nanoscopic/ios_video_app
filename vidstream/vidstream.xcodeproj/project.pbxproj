@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE18E3F5266F3A1A009CF67C /* ujsonin.c in Sources */ = {isa = PBXBuildFile; fileRef = CE18E3F4266F3A1A009CF67C /* ujsonin.c */; };
+		CE18E3F9266F3A24009CF67C /* string-tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE18E3F8266F3A24009CF67C /* string-tree.c */; };
+		CE18E3FD266F3A2D009CF67C /* red_black_tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE18E3FC266F3A2D009CF67C /* red_black_tree.c */; };
 		CE2EC8FB25511360000EDC7D /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE2EC8FA25511360000EDC7D /* CoreImage.framework */; };
 		CE2EC90225514D0B000EDC7D /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE2EC90125514D0B000EDC7D /* Accelerate.framework */; };
 		CE432E94253E594C0020223E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432E93253E594C0020223E /* AppDelegate.m */; };
@@ -22,12 +25,6 @@
 		CE432EE8253E59820020223E /* vidstream_ext.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = CE432ECD253E59820020223E /* vidstream_ext.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CE432EF6253E899B0020223E /* libnng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432EF4253E890A0020223E /* libnng.a */; };
 		CE432EFA25412DD90020223E /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432EF925412DD90020223E /* CoreServices.framework */; };
-		CE875D982579D49100F1241B /* red_black_tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875D972579D49100F1241B /* red_black_tree.c */; };
-		CE875D9F2579D4A500F1241B /* string-tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875D9E2579D4A500F1241B /* string-tree.c */; };
-		CE875DA62579D4B600F1241B /* ujsonin.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875DA52579D4B600F1241B /* ujsonin.c */; };
-		CE875DB6257A0C7400F1241B /* ujsonin.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875DA52579D4B600F1241B /* ujsonin.c */; };
-		CE875DBC257A0C7700F1241B /* string-tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875D9E2579D4A500F1241B /* string-tree.c */; };
-		CE875DC2257A0C7A00F1241B /* red_black_tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875D972579D49100F1241B /* red_black_tree.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +52,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CE18E3F4266F3A1A009CF67C /* ujsonin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ujsonin.c; path = ujsonin/ujsonin.c; sourceTree = "<group>"; };
+		CE18E3F8266F3A24009CF67C /* string-tree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "string-tree.c"; path = "ujsonin/string-tree.c"; sourceTree = "<group>"; };
+		CE18E3FC266F3A2D009CF67C /* red_black_tree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = red_black_tree.c; path = ujsonin/red_black_tree.c; sourceTree = "<group>"; };
 		CE2EC8FA25511360000EDC7D /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		CE2EC90125514D0B000EDC7D /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		CE432E8F253E594C0020223E /* vidstream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vidstream.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,26 +70,14 @@
 		CE432EA3253E594C0020223E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CE432EA5253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE432EA6253E594C0020223E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		CE432EB0253E594C0020223E /* vidtestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = vidtestTests.m; sourceTree = "<group>"; };
-		CE432EB2253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE432EBB253E594C0020223E /* vidtestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = vidtestUITests.m; sourceTree = "<group>"; };
-		CE432EBD253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE432ECD253E59820020223E /* vidstream_ext.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vidstream_ext.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE432ECF253E59820020223E /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		CE432ED2253E59820020223E /* SampleHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleHandler.h; sourceTree = "<group>"; };
 		CE432ED3253E59820020223E /* SampleHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleHandler.m; sourceTree = "<group>"; };
 		CE432ED5253E59820020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE432EDC253E59820020223E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		CE432EDF253E59820020223E /* BroadcastSetupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BroadcastSetupViewController.h; sourceTree = "<group>"; };
-		CE432EE0253E59820020223E /* BroadcastSetupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BroadcastSetupViewController.m; sourceTree = "<group>"; };
-		CE432EE2253E59820020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE432EF4253E890A0020223E /* libnng.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libnng.a; path = vidtest2/libnng.a; sourceTree = "<group>"; };
-		CE432EF72541229F0020223E /* libturbojpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libturbojpeg.a; path = "vidtest2/TurboJPEG/libjpeg-turbo/lib/libturbojpeg.a"; sourceTree = "<group>"; };
+		CE432EF4253E890A0020223E /* libnng.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libnng.a; path = vidstream_ext/libnng.a; sourceTree = "<group>"; };
 		CE432EF925412DD90020223E /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
-		CE875D972579D49100F1241B /* red_black_tree.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = red_black_tree.c; path = vidtest2/ujsonin/red_black_tree.c; sourceTree = "<group>"; };
-		CE875D9E2579D4A500F1241B /* string-tree.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "string-tree.c"; path = "vidtest2/ujsonin/string-tree.c"; sourceTree = "<group>"; };
-		CE875DA52579D4B600F1241B /* ujsonin.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ujsonin.c; path = vidtest2/ujsonin/ujsonin.c; sourceTree = "<group>"; };
-		CE875DC8257A160D00F1241B /* vidtest2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vidtest2.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,14 +106,8 @@
 		CE432E86253E594C0020223E = {
 			isa = PBXGroup;
 			children = (
-				CE875DA52579D4B600F1241B /* ujsonin.c */,
-				CE875D9E2579D4A500F1241B /* string-tree.c */,
-				CE875D972579D49100F1241B /* red_black_tree.c */,
-				CE432E91253E594C0020223E /* vidtest */,
-				CE432EAF253E594C0020223E /* vidtestTests */,
-				CE432EBA253E594C0020223E /* vidtestUITests */,
-				CE432ED1253E59820020223E /* vidtest2 */,
-				CE432EDE253E59820020223E /* vidtest2SetupUI */,
+				CE432E91253E594C0020223E /* vidstream */,
+				CE432ED1253E59820020223E /* vidstream_ext */,
 				CE432ECE253E59820020223E /* Frameworks */,
 				CE432E90253E594C0020223E /* Products */,
 			);
@@ -140,7 +122,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CE432E91253E594C0020223E /* vidtest */ = {
+		CE432E91253E594C0020223E /* vidstream */ = {
 			isa = PBXGroup;
 			children = (
 				CE432E92253E594C0020223E /* AppDelegate.h */,
@@ -156,25 +138,7 @@
 				CE432EA5253E594C0020223E /* Info.plist */,
 				CE432EA6253E594C0020223E /* main.m */,
 			);
-			path = vidtest;
-			sourceTree = "<group>";
-		};
-		CE432EAF253E594C0020223E /* vidtestTests */ = {
-			isa = PBXGroup;
-			children = (
-				CE432EB0253E594C0020223E /* vidtestTests.m */,
-				CE432EB2253E594C0020223E /* Info.plist */,
-			);
-			path = vidtestTests;
-			sourceTree = "<group>";
-		};
-		CE432EBA253E594C0020223E /* vidtestUITests */ = {
-			isa = PBXGroup;
-			children = (
-				CE432EBB253E594C0020223E /* vidtestUITests.m */,
-				CE432EBD253E594C0020223E /* Info.plist */,
-			);
-			path = vidtestUITests;
+			path = vidstream;
 			sourceTree = "<group>";
 		};
 		CE432ECE253E59820020223E /* Frameworks */ = {
@@ -183,7 +147,6 @@
 				CE2EC90125514D0B000EDC7D /* Accelerate.framework */,
 				CE2EC8FA25511360000EDC7D /* CoreImage.framework */,
 				CE432EF925412DD90020223E /* CoreServices.framework */,
-				CE432EF72541229F0020223E /* libturbojpeg.a */,
 				CE432EF4253E890A0020223E /* libnng.a */,
 				CE432ECF253E59820020223E /* ReplayKit.framework */,
 				CE432EDC253E59820020223E /* UIKit.framework */,
@@ -191,25 +154,17 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		CE432ED1253E59820020223E /* vidtest2 */ = {
+		CE432ED1253E59820020223E /* vidstream_ext */ = {
 			isa = PBXGroup;
 			children = (
-				CE875DC8257A160D00F1241B /* vidtest2.entitlements */,
+				CE18E3FC266F3A2D009CF67C /* red_black_tree.c */,
+				CE18E3F8266F3A24009CF67C /* string-tree.c */,
+				CE18E3F4266F3A1A009CF67C /* ujsonin.c */,
 				CE432ED2253E59820020223E /* SampleHandler.h */,
 				CE432ED3253E59820020223E /* SampleHandler.m */,
 				CE432ED5253E59820020223E /* Info.plist */,
 			);
-			path = vidtest2;
-			sourceTree = "<group>";
-		};
-		CE432EDE253E59820020223E /* vidtest2SetupUI */ = {
-			isa = PBXGroup;
-			children = (
-				CE432EDF253E59820020223E /* BroadcastSetupViewController.h */,
-				CE432EE0253E59820020223E /* BroadcastSetupViewController.m */,
-				CE432EE2253E59820020223E /* Info.plist */,
-			);
-			path = vidtest2SetupUI;
+			path = vidstream_ext;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -312,9 +267,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE875DA62579D4B600F1241B /* ujsonin.c in Sources */,
-				CE875D9F2579D4A500F1241B /* string-tree.c in Sources */,
-				CE875D982579D49100F1241B /* red_black_tree.c in Sources */,
 				CE432EA7253E594C0020223E /* main.m in Sources */,
 				CE432E9A253E594C0020223E /* ViewController.m in Sources */,
 				CE432E94253E594C0020223E /* AppDelegate.m in Sources */,
@@ -327,10 +279,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE875DC2257A0C7A00F1241B /* red_black_tree.c in Sources */,
-				CE875DBC257A0C7700F1241B /* string-tree.c in Sources */,
-				CE875DB6257A0C7400F1241B /* ujsonin.c in Sources */,
+				CE18E3F5266F3A1A009CF67C /* ujsonin.c in Sources */,
 				CE432ED4253E59820020223E /* SampleHandler.m in Sources */,
+				CE18E3F9266F3A24009CF67C /* string-tree.c in Sources */,
+				CE18E3FD266F3A2D009CF67C /* red_black_tree.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -484,10 +436,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = vidtest/vidtest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtest/Info.plist;
+				INFOPLIST_FILE = vidstream/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -504,16 +455,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = vidtest/vidtest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtest/Info.plist;
+				INFOPLIST_FILE = vidstream/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream_ext;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -522,11 +472,10 @@
 		CE432EED253E59820020223E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = vidtest2/vidtest2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtest2/Info.plist;
+				INFOPLIST_FILE = vidstream_ext/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -535,7 +484,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/vidtest2",
+					"$(PROJECT_DIR)/vidstream_ext",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -547,11 +496,10 @@
 		CE432EEE253E59820020223E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = vidtest2/vidtest2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtest2/Info.plist;
+				INFOPLIST_FILE = vidstream_ext/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -560,9 +508,9 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/vidtest2",
+					"$(PROJECT_DIR)/vidstream_ext",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream_ext.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
