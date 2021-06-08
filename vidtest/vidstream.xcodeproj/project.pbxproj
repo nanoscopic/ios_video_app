@@ -17,15 +17,9 @@
 		CE432EA1253E594C0020223E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE432EA0253E594C0020223E /* Assets.xcassets */; };
 		CE432EA4253E594C0020223E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE432EA2253E594C0020223E /* LaunchScreen.storyboard */; };
 		CE432EA7253E594C0020223E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432EA6253E594C0020223E /* main.m */; };
-		CE432EB1253E594C0020223E /* vidtestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432EB0253E594C0020223E /* vidtestTests.m */; };
-		CE432EBC253E594C0020223E /* vidtestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432EBB253E594C0020223E /* vidtestUITests.m */; };
 		CE432ED0253E59820020223E /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432ECF253E59820020223E /* ReplayKit.framework */; };
 		CE432ED4253E59820020223E /* SampleHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432ED3253E59820020223E /* SampleHandler.m */; };
-		CE432EDB253E59820020223E /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432ECF253E59820020223E /* ReplayKit.framework */; };
-		CE432EDD253E59820020223E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432EDC253E59820020223E /* UIKit.framework */; };
-		CE432EE1253E59820020223E /* BroadcastSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432EE0253E59820020223E /* BroadcastSetupViewController.m */; };
-		CE432EE5253E59820020223E /* vidtest2SetupUI.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = CE432EDA253E59820020223E /* vidtest2SetupUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		CE432EE8253E59820020223E /* vidtest2.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = CE432ECD253E59820020223E /* vidtest2.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CE432EE8253E59820020223E /* vidstream_ext.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = CE432ECD253E59820020223E /* vidstream_ext.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CE432EF6253E899B0020223E /* libnng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432EF4253E890A0020223E /* libnng.a */; };
 		CE432EFA25412DD90020223E /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432EF925412DD90020223E /* CoreServices.framework */; };
 		CE875D982579D49100F1241B /* red_black_tree.c in Sources */ = {isa = PBXBuildFile; fileRef = CE875D972579D49100F1241B /* red_black_tree.c */; };
@@ -37,27 +31,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		CE432EAD253E594C0020223E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CE432E87253E594C0020223E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = CE432E8E253E594C0020223E;
-			remoteInfo = vidtest;
-		};
-		CE432EB8253E594C0020223E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CE432E87253E594C0020223E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = CE432E8E253E594C0020223E;
-			remoteInfo = vidtest;
-		};
-		CE432EE3253E59820020223E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = CE432E87253E594C0020223E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = CE432ED9253E59820020223E;
-			remoteInfo = vidtest2SetupUI;
-		};
 		CE432EE6253E59820020223E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CE432E87253E594C0020223E /* Project object */;
@@ -74,8 +47,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				CE432EE5253E59820020223E /* vidtest2SetupUI.appex in Embed App Extensions */,
-				CE432EE8253E59820020223E /* vidtest2.appex in Embed App Extensions */,
+				CE432EE8253E59820020223E /* vidstream_ext.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -85,7 +57,7 @@
 /* Begin PBXFileReference section */
 		CE2EC8FA25511360000EDC7D /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		CE2EC90125514D0B000EDC7D /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
-		CE432E8F253E594C0020223E /* vidtest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vidtest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE432E8F253E594C0020223E /* vidstream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vidstream.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE432E92253E594C0020223E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		CE432E93253E594C0020223E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		CE432E95253E594C0020223E /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
@@ -98,18 +70,15 @@
 		CE432EA3253E594C0020223E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CE432EA5253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE432EA6253E594C0020223E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		CE432EAC253E594C0020223E /* vidtestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vidtestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE432EB0253E594C0020223E /* vidtestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = vidtestTests.m; sourceTree = "<group>"; };
 		CE432EB2253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE432EB7253E594C0020223E /* vidtestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vidtestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE432EBB253E594C0020223E /* vidtestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = vidtestUITests.m; sourceTree = "<group>"; };
 		CE432EBD253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE432ECD253E59820020223E /* vidtest2.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vidtest2.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE432ECD253E59820020223E /* vidstream_ext.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vidstream_ext.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE432ECF253E59820020223E /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		CE432ED2253E59820020223E /* SampleHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleHandler.h; sourceTree = "<group>"; };
 		CE432ED3253E59820020223E /* SampleHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleHandler.m; sourceTree = "<group>"; };
 		CE432ED5253E59820020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE432EDA253E59820020223E /* vidtest2SetupUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vidtest2SetupUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE432EDC253E59820020223E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CE432EDF253E59820020223E /* BroadcastSetupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BroadcastSetupViewController.h; sourceTree = "<group>"; };
 		CE432EE0253E59820020223E /* BroadcastSetupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BroadcastSetupViewController.m; sourceTree = "<group>"; };
@@ -121,25 +90,10 @@
 		CE875D9E2579D4A500F1241B /* string-tree.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "string-tree.c"; path = "vidtest2/ujsonin/string-tree.c"; sourceTree = "<group>"; };
 		CE875DA52579D4B600F1241B /* ujsonin.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ujsonin.c; path = vidtest2/ujsonin/ujsonin.c; sourceTree = "<group>"; };
 		CE875DC8257A160D00F1241B /* vidtest2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vidtest2.entitlements; sourceTree = "<group>"; };
-		CE875DCE257A17FF00F1241B /* vidtest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vidtest.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		CE432E8C253E594C0020223E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CE432EA9253E594C0020223E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CE432EB4253E594C0020223E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -155,15 +109,6 @@
 				CE432EF6253E899B0020223E /* libnng.a in Frameworks */,
 				CE432ED0253E59820020223E /* ReplayKit.framework in Frameworks */,
 				CE432EFA25412DD90020223E /* CoreServices.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CE432ED7253E59820020223E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CE432EDB253E59820020223E /* ReplayKit.framework in Frameworks */,
-				CE432EDD253E59820020223E /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,11 +134,8 @@
 		CE432E90253E594C0020223E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CE432E8F253E594C0020223E /* vidtest.app */,
-				CE432EAC253E594C0020223E /* vidtestTests.xctest */,
-				CE432EB7253E594C0020223E /* vidtestUITests.xctest */,
-				CE432ECD253E59820020223E /* vidtest2.appex */,
-				CE432EDA253E59820020223E /* vidtest2SetupUI.appex */,
+				CE432E8F253E594C0020223E /* vidstream.app */,
+				CE432ECD253E59820020223E /* vidstream_ext.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -201,7 +143,6 @@
 		CE432E91253E594C0020223E /* vidtest */ = {
 			isa = PBXGroup;
 			children = (
-				CE875DCE257A17FF00F1241B /* vidtest.entitlements */,
 				CE432E92253E594C0020223E /* AppDelegate.h */,
 				CE432E93253E594C0020223E /* AppDelegate.m */,
 				CE432E95253E594C0020223E /* SceneDelegate.h */,
@@ -274,9 +215,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		CE432E8E253E594C0020223E /* vidtest */ = {
+		CE432E8E253E594C0020223E /* vidstream */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CE432EC0253E594D0020223E /* Build configuration list for PBXNativeTarget "vidtest" */;
+			buildConfigurationList = CE432EC0253E594D0020223E /* Build configuration list for PBXNativeTarget "vidstream" */;
 			buildPhases = (
 				CE432E8B253E594C0020223E /* Sources */,
 				CE432E8C253E594C0020223E /* Frameworks */,
@@ -286,53 +227,16 @@
 			buildRules = (
 			);
 			dependencies = (
-				CE432EE4253E59820020223E /* PBXTargetDependency */,
 				CE432EE7253E59820020223E /* PBXTargetDependency */,
 			);
-			name = vidtest;
+			name = vidstream;
 			productName = vidtest;
-			productReference = CE432E8F253E594C0020223E /* vidtest.app */;
+			productReference = CE432E8F253E594C0020223E /* vidstream.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CE432EAB253E594C0020223E /* vidtestTests */ = {
+		CE432ECC253E59820020223E /* vidstream_ext */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CE432EC3253E594D0020223E /* Build configuration list for PBXNativeTarget "vidtestTests" */;
-			buildPhases = (
-				CE432EA8253E594C0020223E /* Sources */,
-				CE432EA9253E594C0020223E /* Frameworks */,
-				CE432EAA253E594C0020223E /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				CE432EAE253E594C0020223E /* PBXTargetDependency */,
-			);
-			name = vidtestTests;
-			productName = vidtestTests;
-			productReference = CE432EAC253E594C0020223E /* vidtestTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		CE432EB6253E594C0020223E /* vidtestUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CE432EC6253E594D0020223E /* Build configuration list for PBXNativeTarget "vidtestUITests" */;
-			buildPhases = (
-				CE432EB3253E594C0020223E /* Sources */,
-				CE432EB4253E594C0020223E /* Frameworks */,
-				CE432EB5253E594C0020223E /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				CE432EB9253E594C0020223E /* PBXTargetDependency */,
-			);
-			name = vidtestUITests;
-			productName = vidtestUITests;
-			productReference = CE432EB7253E594C0020223E /* vidtestUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
-		CE432ECC253E59820020223E /* vidtest2 */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CE432EEC253E59820020223E /* Build configuration list for PBXNativeTarget "vidtest2" */;
+			buildConfigurationList = CE432EEC253E59820020223E /* Build configuration list for PBXNativeTarget "vidstream_ext" */;
 			buildPhases = (
 				CE432EC9253E59820020223E /* Sources */,
 				CE432ECA253E59820020223E /* Frameworks */,
@@ -342,26 +246,9 @@
 			);
 			dependencies = (
 			);
-			name = vidtest2;
+			name = vidstream_ext;
 			productName = vidtest2;
-			productReference = CE432ECD253E59820020223E /* vidtest2.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
-		CE432ED9253E59820020223E /* vidtest2SetupUI */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CE432EE9253E59820020223E /* Build configuration list for PBXNativeTarget "vidtest2SetupUI" */;
-			buildPhases = (
-				CE432ED6253E59820020223E /* Sources */,
-				CE432ED7253E59820020223E /* Frameworks */,
-				CE432ED8253E59820020223E /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = vidtest2SetupUI;
-			productName = vidtest2SetupUI;
-			productReference = CE432EDA253E59820020223E /* vidtest2SetupUI.appex */;
+			productReference = CE432ECD253E59820020223E /* vidstream_ext.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -376,23 +263,12 @@
 					CE432E8E253E594C0020223E = {
 						CreatedOnToolsVersion = 12.0;
 					};
-					CE432EAB253E594C0020223E = {
-						CreatedOnToolsVersion = 12.0;
-						TestTargetID = CE432E8E253E594C0020223E;
-					};
-					CE432EB6253E594C0020223E = {
-						CreatedOnToolsVersion = 12.0;
-						TestTargetID = CE432E8E253E594C0020223E;
-					};
 					CE432ECC253E59820020223E = {
-						CreatedOnToolsVersion = 12.0;
-					};
-					CE432ED9253E59820020223E = {
 						CreatedOnToolsVersion = 12.0;
 					};
 				};
 			};
-			buildConfigurationList = CE432E8A253E594C0020223E /* Build configuration list for PBXProject "vidtest" */;
+			buildConfigurationList = CE432E8A253E594C0020223E /* Build configuration list for PBXProject "vidstream" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -405,11 +281,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CE432E8E253E594C0020223E /* vidtest */,
-				CE432EAB253E594C0020223E /* vidtestTests */,
-				CE432EB6253E594C0020223E /* vidtestUITests */,
-				CE432ECC253E59820020223E /* vidtest2 */,
-				CE432ED9253E59820020223E /* vidtest2SetupUI */,
+				CE432E8E253E594C0020223E /* vidstream */,
+				CE432ECC253E59820020223E /* vidstream_ext */,
 			);
 		};
 /* End PBXProject section */
@@ -425,28 +298,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CE432EAA253E594C0020223E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CE432EB5253E594C0020223E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		CE432ECB253E59820020223E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CE432ED8253E59820020223E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -471,22 +323,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CE432EA8253E594C0020223E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CE432EB1253E594C0020223E /* vidtestTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CE432EB3253E594C0020223E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CE432EBC253E594C0020223E /* vidtestUITests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		CE432EC9253E59820020223E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -498,35 +334,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CE432ED6253E59820020223E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CE432EE1253E59820020223E /* BroadcastSetupViewController.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		CE432EAE253E594C0020223E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = CE432E8E253E594C0020223E /* vidtest */;
-			targetProxy = CE432EAD253E594C0020223E /* PBXContainerItemProxy */;
-		};
-		CE432EB9253E594C0020223E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = CE432E8E253E594C0020223E /* vidtest */;
-			targetProxy = CE432EB8253E594C0020223E /* PBXContainerItemProxy */;
-		};
-		CE432EE4253E59820020223E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = CE432ED9253E59820020223E /* vidtest2SetupUI */;
-			targetProxy = CE432EE3253E59820020223E /* PBXContainerItemProxy */;
-		};
 		CE432EE7253E59820020223E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CE432ECC253E59820020223E /* vidtest2 */;
+			target = CE432ECC253E59820020223E /* vidstream_ext */;
 			targetProxy = CE432EE6253E59820020223E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -602,7 +415,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -656,7 +469,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -673,14 +486,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = vidtest/vidtest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 7628766FL2;
 				INFOPLIST_FILE = vidtest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -693,133 +506,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = vidtest/vidtest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 7628766FL2;
 				INFOPLIST_FILE = vidtest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		CE432EC4253E594D0020223E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtestTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtestTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vidtest.app/vidtest";
-			};
-			name = Debug;
-		};
-		CE432EC5253E594D0020223E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtestTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtestTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vidtest.app/vidtest";
-			};
-			name = Release;
-		};
-		CE432EC7253E594D0020223E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtestUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtestUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = vidtest;
-			};
-			name = Debug;
-		};
-		CE432EC8253E594D0020223E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtestUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtestUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = vidtest;
-			};
-			name = Release;
-		};
-		CE432EEA253E59820020223E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtest2SetupUI/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2.vidtest2SetupUI;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		CE432EEB253E59820020223E /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7628766FL2;
-				INFOPLIST_FILE = vidtest2SetupUI/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2.vidtest2SetupUI;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -830,7 +525,7 @@
 				CODE_SIGN_ENTITLEMENTS = vidtest2/vidtest2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 7628766FL2;
 				INFOPLIST_FILE = vidtest2/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -842,7 +537,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/vidtest2",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -855,7 +550,7 @@
 				CODE_SIGN_ENTITLEMENTS = vidtest2/vidtest2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 7628766FL2;
 				INFOPLIST_FILE = vidtest2/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -867,7 +562,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/vidtest2",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidtest2.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -878,7 +573,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CE432E8A253E594C0020223E /* Build configuration list for PBXProject "vidtest" */ = {
+		CE432E8A253E594C0020223E /* Build configuration list for PBXProject "vidstream" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CE432EBE253E594D0020223E /* Debug */,
@@ -887,7 +582,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CE432EC0253E594D0020223E /* Build configuration list for PBXNativeTarget "vidtest" */ = {
+		CE432EC0253E594D0020223E /* Build configuration list for PBXNativeTarget "vidstream" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CE432EC1253E594D0020223E /* Debug */,
@@ -896,34 +591,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CE432EC3253E594D0020223E /* Build configuration list for PBXNativeTarget "vidtestTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CE432EC4253E594D0020223E /* Debug */,
-				CE432EC5253E594D0020223E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CE432EC6253E594D0020223E /* Build configuration list for PBXNativeTarget "vidtestUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CE432EC7253E594D0020223E /* Debug */,
-				CE432EC8253E594D0020223E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CE432EE9253E59820020223E /* Build configuration list for PBXNativeTarget "vidtest2SetupUI" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CE432EEA253E59820020223E /* Debug */,
-				CE432EEB253E59820020223E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CE432EEC253E59820020223E /* Build configuration list for PBXNativeTarget "vidtest2" */ = {
+		CE432EEC253E59820020223E /* Build configuration list for PBXNativeTarget "vidstream_ext" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CE432EED253E59820020223E /* Debug */,
