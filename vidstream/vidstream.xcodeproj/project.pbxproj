@@ -15,10 +15,7 @@
 		CE432E94253E594C0020223E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432E93253E594C0020223E /* AppDelegate.m */; };
 		CE432E97253E594C0020223E /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432E96253E594C0020223E /* SceneDelegate.m */; };
 		CE432E9A253E594C0020223E /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432E99253E594C0020223E /* ViewController.m */; };
-		CE432E9D253E594C0020223E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE432E9B253E594C0020223E /* Main.storyboard */; };
-		CE432E9F253E594C0020223E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE432E9E253E594C0020223E /* ContentView.swift */; };
 		CE432EA1253E594C0020223E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE432EA0253E594C0020223E /* Assets.xcassets */; };
-		CE432EA4253E594C0020223E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE432EA2253E594C0020223E /* LaunchScreen.storyboard */; };
 		CE432EA7253E594C0020223E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432EA6253E594C0020223E /* main.m */; };
 		CE432ED0253E59820020223E /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE432ECF253E59820020223E /* ReplayKit.framework */; };
 		CE432ED4253E59820020223E /* SampleHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = CE432ED3253E59820020223E /* SampleHandler.m */; };
@@ -64,10 +61,7 @@
 		CE432E96253E594C0020223E /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		CE432E98253E594C0020223E /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		CE432E99253E594C0020223E /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		CE432E9C253E594C0020223E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		CE432E9E253E594C0020223E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CE432EA0253E594C0020223E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CE432EA3253E594C0020223E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CE432EA5253E594C0020223E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE432EA6253E594C0020223E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		CE432ECD253E59820020223E /* vidstream_ext.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vidstream_ext.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -131,10 +125,7 @@
 				CE432E96253E594C0020223E /* SceneDelegate.m */,
 				CE432E98253E594C0020223E /* ViewController.h */,
 				CE432E99253E594C0020223E /* ViewController.m */,
-				CE432E9B253E594C0020223E /* Main.storyboard */,
-				CE432E9E253E594C0020223E /* ContentView.swift */,
 				CE432EA0253E594C0020223E /* Assets.xcassets */,
-				CE432EA2253E594C0020223E /* LaunchScreen.storyboard */,
 				CE432EA5253E594C0020223E /* Info.plist */,
 				CE432EA6253E594C0020223E /* main.m */,
 			);
@@ -247,9 +238,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE432EA4253E594C0020223E /* LaunchScreen.storyboard in Resources */,
 				CE432EA1253E594C0020223E /* Assets.xcassets in Resources */,
-				CE432E9D253E594C0020223E /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,7 +259,6 @@
 				CE432EA7253E594C0020223E /* main.m in Sources */,
 				CE432E9A253E594C0020223E /* ViewController.m in Sources */,
 				CE432E94253E594C0020223E /* AppDelegate.m in Sources */,
-				CE432E9F253E594C0020223E /* ContentView.swift in Sources */,
 				CE432E97253E594C0020223E /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -295,25 +283,6 @@
 			targetProxy = CE432EE6253E59820020223E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		CE432E9B253E594C0020223E /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				CE432E9C253E594C0020223E /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		CE432EA2253E594C0020223E /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				CE432EA3253E594C0020223E /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		CE432EBE253E594D0020223E /* Debug */ = {
@@ -463,7 +432,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream_ext;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -510,7 +479,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/vidstream_ext",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream_ext.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dryark.vidstream.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
