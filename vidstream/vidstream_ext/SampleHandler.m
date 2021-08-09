@@ -84,15 +84,26 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     char addr2[50];
     sprintf( addr2, "tcp://127.0.0.1:%d", _controlPort );
     nng_setopt_int( _rep, NNG_OPT_SENDBUF, 100000);
+    nng_setopt_int( _rep, NNG_OPT_RECVTIMEO, 100);
     int listen_error = nng_listen( _rep, addr2, NULL, 0);
     if( listen_error != 0 ) {
         NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _controlPort, listen_error );
     }
     
+    nng_pull_open(&_pull);
+    char addr3[50];
+    sprintf( addr3, "inproc://control" );
+    nng_listen( _pull, addr3, NULL, 0);
+    
     ujsonin_init();
     while( 1 ) {
         nng_msg *nmsg = NULL;
-        nng_recvmsg( _rep, &nmsg, 0 );
+        int err = nng_recvmsg( _rep, &nmsg, 0 );
+        if( err ) {
+            int err2 = nng_recvmsg( _pull, &nmsg, NNG_FLAG_NONBLOCK );
+            if( !err2 ) break;
+            continue;
+        }
         if( nmsg != NULL  ) {
             int msgLen = (int) nng_msg_len( nmsg );
             if( msgLen > 0 ) {
@@ -121,7 +132,10 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                         action = text->text;
                     }
                 }
-                if( !strncmp( action, "done", 4 ) ) break;
+                if( !strncmp( action, "done", 4 ) ) {
+                    nng_msg_free( nmsg );
+                    break;
+                }
                 if( !strncmp( action, "start", 5 ) ) [_framePasser startSending];
                 if( !strncmp( action, "stop", 4 ) ) [_framePasser stopSending];
                 if( !strncmp( action, "oneframe", 8 ) ) [_framePasser oneFrame];
@@ -144,6 +158,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     }
     
     nng_close( _rep );
+    nng_close( _pull );
 }
 
 @end
@@ -165,6 +180,9 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     *_forceFrame2 = 0;
     _w = 0;
     _h = 0;
+    _frameCount = 0;
+    _lastFrameCount = 0;
+    _lastPlaneBase = NULL;
     return self;
 }
 
@@ -197,6 +215,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
         char addr2[50];
         sprintf( addr2, "tcp://%s:%d", _outputIp, _outputPort );
         nng_setopt_int( _push, NNG_OPT_SENDBUF, 100000);
+        nng_setopt_int( _push, NNG_OPT_SENDTIMEO, 500);
         int r10 = nng_dial( _push, addr2, NULL, 0);
         if( r10 != 0 ) {
             NSLog( @"xxr error connecting to %s : %d - %d", _outputIp, _outputPort, r10 );
@@ -206,6 +225,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
         char addr2[50];
         sprintf( addr2, "tcp://127.0.0.1:%d", _inputPort );
         nng_setopt_int( _push, NNG_OPT_SENDBUF, 100000);
+        nng_setopt_int( _push, NNG_OPT_SENDTIMEO, 500);
         int r10 = nng_listen( _push, addr2, NULL, 0);
         if( r10 != 0 ) {
             NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _inputPort, r10 );
@@ -239,7 +259,10 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 [_ciFilter setValue:@1.0 forKey:@"inputAspectRatio"];
             }
             
-            uint32_t newCrc = 0;
+            bool force = false;
+            
+            
+            /*uint32_t newCrc = 0;
             size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
             for( int i=0;i<planeCount;i++ ) {
                 size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
@@ -249,16 +272,66 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 newCrc = crc32( newCrc, (const char *) planeBase + barSize, bytes*planeH - barSize );
             }
             
-            bool force = false;
-            
             if( _forceFrame1 != *_forceFrame2 ) {
                 *_forceFrame2 = _forceFrame1;
                 force = true;
+            }*/
+            char *planeBase = NULL;
+            size_t planeSize = 0;
+            
+            uint32_t diff = 0;
+            if( _lastPlaneBase ) {
+                size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
+                for( int i=0;i<planeCount;i++ ) {
+                    size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
+                    planeBase = CVPixelBufferGetBaseAddressOfPlane( pixelBuffer, i );
+                    //char *lastPlaneBase = CVPixelBufferGetBaseAddressOfPlane( _lastPixelBuffer, i );
+                    size_t planeH = CVPixelBufferGetHeightOfPlane( pixelBuffer, i );
+                    size_t barSize = 50*bytes;
+                    //newCrc = crc32( newCrc, (const char *) planeBase + barSize, bytes*planeH - barSize );
+                    planeSize = bytes * planeH;
+                    for( int i=0;i<planeSize; i++ ) {
+                        int dif = planeBase[i]-_lastPlaneBase[i];
+                        if( dif < 0 ) dif = -dif;
+                        diff += dif;
+                    }
+                }
+            }
+            else {
+                size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
+                for( int i=0;i<planeCount;i++ ) {
+                    size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
+                    planeBase = CVPixelBufferGetBaseAddressOfPlane( pixelBuffer, i );
+                    size_t planeH = CVPixelBufferGetHeightOfPlane( pixelBuffer, i );
+                    planeSize = bytes * planeH;
+                }
             }
             
-            if( force || ( *_crc != newCrc && *_crc2 != newCrc ) ) {
-                *_crc2 = *_crc;
-                *_crc = newCrc;
+            if( diff > 0x9000 ) {
+                //*_forceFrame2 = _forceFrame1;
+                force = true;
+            }
+
+            _frameCount++;
+            double frameDif = _frameCount - _lastFrameCount;
+            
+            if( ( frameDif > 20 ) || force ) { //}|| ( *_crc != newCrc && *_crc2 != newCrc ) ) {
+                //if( _lastPlaneBase ) {
+                    //CVPixelBufferUnlockBaseAddress( _lastPixelBuffer, kCVPixelBufferLock_ReadOnly );
+                    //CFRelease( _lastMsg->sampleBuffer );
+                //}
+                //_lastMsg = msg;
+                //_lastPixelBuffer = pixelBuffer;
+                if( !_lastPlaneBase ) _lastPlaneBase = malloc( planeSize );
+                memcpy( _lastPlaneBase, planeBase, planeSize );
+                
+                _lastFrameCount = _frameCount;
+                int cause = 0;
+                if( frameDif > 20 ) cause = 1;
+                if( force ) cause = 2;
+                
+                //*_crc2 = *_crc;
+                //*_crc = newCrc;
                 ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer];
                 
                 //CGColorSpaceRef linearColorSpace = CGColorSpaceCreateWithName( kCGColorSpaceLinearSRGB );
@@ -270,11 +343,14 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 //NSData *heifData = [context HEIFRepresentationOfImage:ciImage format:kCIFormatRGBA8 colorSpace:linearColorSpace options:@{} ];
                 NSData *jpegData = [context JPEGRepresentationOfImage:newImage colorSpace:deviceRGBColorSpace options:@{}];
                 
-                mynano__send_jpeg( _push, (unsigned char *) jpegData.bytes, jpegData.length, _w, _h, (int) _destW, (int) _destH );
-                
+                mynano__send_jpeg( _push,
+                  (unsigned char *) jpegData.bytes, jpegData.length, _w, _h, (int) _destW, (int) _destH, cause, diff );
                 jpegData = nil;
                 ciImage = nil;
                 newImage = nil;
+            } else {
+                //CVPixelBufferUnlockBaseAddress( pixelBuffer, kCVPixelBufferLock_ReadOnly );
+                //CFRelease( msg->sampleBuffer );
             }
         }
         
@@ -325,7 +401,10 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 if( base->type == 1 ) {
                     fp_msg_text *text = ( fp_msg_text * ) base;
                     NSLog(@"xxr Got message %s", text->text );
-                    if( !strncmp( text->text, "done", 4 ) ) break;
+                    if( !strncmp( text->text, "done", 4 ) ) {
+                        nng_msg_free( msg );
+                        break;
+                    }
                 } else if( base->type == 2 ) {
                     fp_msg_buffer *buffer = ( fp_msg_buffer * ) base;
                     if( noFrames ) noFrames = false;
@@ -358,14 +437,23 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     
     _framePasserInst = [[FramePasser alloc] init:_inputPort outputIp:_outputIp outputPort:_outputPort];
     
+    //_frameThread = [[NSThread alloc] initWithTarget:_framePasserInst selector:@selector(entry:) object:nil];
     [NSThread detachNewThreadSelector:@selector(entry:) toTarget:_framePasserInst withObject:nil];
     
     if( _controlPort ) {
         _controlThreadInst = [[ControlThread alloc] init:_controlPort framePasser:_framePasserInst];
         [NSThread detachNewThreadSelector:@selector(entry:) toTarget:_controlThreadInst withObject:nil];
+        //_controlThread = [[NSThread alloc] initWithTarget:_controlThreadInst selector:@selector(entry:) object:nil];
     }
     
     _msgBuffer.type = 2;
+    
+    
+    nng_push_open(&_push);
+    char addr2[50];
+    sprintf( addr2, "inproc://control" );
+    nng_setopt_int(_push, NNG_OPT_SENDBUF, 1000);
+    nng_dial( _push, addr2, NULL, 0 );
 }
 
 - (void)readConfig {
@@ -384,6 +472,8 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
 - (void)broadcastFinished {
     _started = 0;
     
+    //[_frameThread cancel];
+    //[_controlThread cancel];
     fp_msg_text *msgt = fp_msg__new_text( "done" );
     
     nng_msg *msg;
@@ -391,23 +481,11 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     nng_msg_append( msg, msgt, sizeof( fp_msg_text ) );
     free( msgt );
     nng_sendmsg( _pushF, msg, 0 );
-    nng_msg_free( msg );
-    
-    nng_close( _pushF );
+    //nng_msg_free( msg );
     
     _framePasserInst = nil;
     
     // stop the control thread
-    
-    nng_socket reqC;
-    
-    nng_req_open(&reqC);
-    
-    char addr2[50];
-    sprintf( addr2, "tcp://127.0.0.1:%d", _controlPort );
-    
-    nng_setopt_int(reqC, NNG_OPT_SENDBUF, 1000);
-    nng_dial( reqC, addr2, NULL, 0 );
     
     fp_msg_text *msgt2 = fp_msg__new_text( "done" );
     
@@ -415,11 +493,14 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     nng_msg_alloc(&msg2, 0);
     
     nng_msg_append( msg2, msgt2, sizeof( fp_msg_text ) );
-    nng_sendmsg( reqC, msg2, 0 );
+    nng_sendmsg( _push, msg2, 0 );
     free( msgt2 );
-    nng_msg_free( msg2 );
+    //nng_msg_free( msg2 );
     
-    nng_close( reqC );
+    usleep(100);
+    
+    nng_close( _pushF );
+    nng_close( _push );
     
     _controlThreadInst = nil;
 }
@@ -430,18 +511,20 @@ void mynano__send_text( nng_socket push, const char *text ) {
     nng_send( push, (void *) buffer, strlen( buffer ), 0 );
 }
 
-void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long dataLen, int ow, int oh, int dw, int dh ) {
-    char buffer[200];
+void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long dataLen, int ow, int oh, int dw, int dh, int cause, uint32_t crc ) {
+    char buffer[300];
     
-    int jlen = snprintf( buffer, 200, "{\"ow\":%i,\"oh\":%i,\"dw\":%i,\"dh\":%i}", ow, oh, dw, dh );
-    long unsigned int totlen = dataLen + jlen;
-    char *both = malloc( totlen );
-    memcpy( both, buffer, jlen );
-    memcpy( &both[jlen], data, dataLen );
-    int res = nng_send( push, both, totlen, 0 );
+    int jlen = snprintf( buffer, 300, "{\"ow\":%i,\"oh\":%i,\"dw\":%i,\"dh\":%i,\"c\":%i,\"crc\":\"%x\"}", ow, oh, dw, dh, cause, crc );
+    
+    nng_msg *msg;
+    nng_msg_alloc( &msg, 0 );
+    nng_msg_append( msg, buffer, jlen );
+    nng_msg_append( msg, data, dataLen );
+    
+    int res = nng_sendmsg( push, msg, 0 );
     if( res != 0 ) NSLog(@"xxr Send failed; res=%d", res );
     
-    free( both );
+    //nng_msg_free( msg );
 }
 
 - (void)processSampleBuffer:(CMSampleBufferRef)sampleBuffer withType:(RPSampleBufferType)sampleBufferType {

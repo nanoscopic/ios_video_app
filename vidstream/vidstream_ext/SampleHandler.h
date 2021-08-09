@@ -8,6 +8,7 @@
 #include "nng/protocol/reqrep0/rep.h"
 #include "nng/protocol/reqrep0/req.h"
 #include "ujsonin/ujsonin.h"
+#include<sys/time.h>
 
 typedef struct fp_msg_base_s {
     int type;
@@ -30,7 +31,7 @@ typedef struct fp_msg_port_s {
     char *ip;
 } fp_msg_port;
 
-void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long dataLen, int ow, int oh, int dw, int dh );
+void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long dataLen, int ow, int oh, int dw, int dh, int cause, uint32_t crc );
 void mynano__send_text( nng_socket push, const char *text );
 
 @interface SampleHandler : RPBroadcastSampleHandler
@@ -47,6 +48,10 @@ void mynano__send_text( nng_socket push, const char *text );
 @property int inputPort;
 @property char *outputIp;
 @property int controlPort;
+
+@property NSThread *frameThread;
+@property NSThread *controlThread;
+@property nng_socket push;
 
 @end
 
@@ -71,8 +76,11 @@ void mynano__send_text( nng_socket push, const char *text );
 @property uint16_t *forceFrame2;
 @property uint32_t *crc;
 @property uint32_t *crc2;
+@property char *lastPlaneBase;
 @property size_t destW;
 @property size_t destH;
+@property double frameCount;
+@property double lastFrameCount;
 @property float scale;
 @property CIFilter *ciFilter;
 @end
@@ -84,4 +92,5 @@ void mynano__send_text( nng_socket push, const char *text );
 @property int controlPort;
 @property FramePasser *framePasser;
 @property nng_socket rep;
+@property nng_socket pull;//inproc termination
 @end
