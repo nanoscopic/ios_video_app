@@ -48,7 +48,7 @@ void mynano__send_text( nng_socket push, const char *text );
 @property int inputPort;
 @property char *outputIp;
 @property int controlPort;
-
+@property int logPort;
 @property NSThread *frameThread;
 @property NSThread *controlThread;
 @property nng_socket push;
@@ -86,11 +86,14 @@ void mynano__send_text( nng_socket push, const char *text );
 @end
 
 @interface ControlThread : NSObject
--(ControlThread *)init:(int)controlPort framePasser:(id)framePasser;
+-(void) log:(char *)str;
+-(ControlThread *)init:(int)controlPort logPort:(int)logPort framePasser:(id)framePasser;
 -(void)dealloc;
 -(void)entry:(id)param;
 @property int controlPort;
 @property FramePasser *framePasser;
 @property nng_socket rep;
 @property nng_socket pull;//inproc termination
+@property int logPort;
+@property nng_socket log;
 @end

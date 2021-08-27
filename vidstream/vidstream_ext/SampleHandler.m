@@ -66,16 +66,25 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
 
 @implementation ControlThread
 
--(ControlThread *) init:(int)controlPort framePasser:(FramePasser *)framePasser {
+-(ControlThread *) init:(int)controlPort logPort:(int)logPort framePasser:(FramePasser *)framePasser {
     self = [super init];
         
     _controlPort = controlPort;
+    _logPort = logPort;
     _framePasser = framePasser;
     
     return self;
 }
 
 -(void) dealloc {
+}
+
+-(void) log:(char *)str {
+    nng_msg *msg2;
+    nng_msg_alloc(&msg2, 0);
+    
+    nng_msg_append( msg2, str, (int) strlen(str) );
+    nng_sendmsg( _log, msg2, 0 );
 }
 
 -(void) entry:(id)param {
@@ -87,7 +96,15 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     nng_setopt_int( _rep, NNG_OPT_RECVTIMEO, 100);
     int listen_error = nng_listen( _rep, addr2, NULL, 0);
     if( listen_error != 0 ) {
-        NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _controlPort, listen_error );
+        //NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _controlPort, listen_error );
+    }
+    
+    nng_push_open( &_log );
+    char addrlog[50];
+    sprintf( addrlog, "tcp://127.0.0.1:%d", _logPort );
+    int r10 = nng_listen( _log, addrlog, NULL, 0);
+    if( r10 != 0 ) {
+        //NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _logPort, r10 );
     }
     
     nng_pull_open(&_pull);
@@ -96,6 +113,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     nng_listen( _pull, addr3, NULL, 0);
     
     ujsonin_init();
+    int sending = 0;
     while( 1 ) {
         nng_msg *nmsg = NULL;
         int err = nng_recvmsg( _rep, &nmsg, 0 );
@@ -109,10 +127,16 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
             if( msgLen > 0 ) {
                 char *msg = (char *) nng_msg_body( nmsg );
                 
-                char buffer[20];
-                char *action;
+                //char buffer[20];
+                char *action = "";
                 
                 if( msg[0] == '{' ) {
+                    //NSLog( @"xxr json msg : %.*s", msgLen, msg );
+                    //os_log( OS_LOG_DEFAULT, "xxr Got message %.*s", msgLen, msg );
+                    char buffer[40];
+                    sprintf( buffer, "Got msg %.*s", msgLen, msg );
+                    [self log:buffer];
+                    
                     int err;
                     node_hash *root = parse( msg, msgLen, NULL, &err );
                     jnode *actionJnode = node_hash__get( root, "action", 6 );
@@ -121,27 +145,43 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                         action = buffer;
                         sprintf(buffer,"%.*s",actionStrNode->len,actionStrNode->str);
                     }
-                    else {
-                        action = "";
-                    }
                     node_hash__delete( root );
                 } else {
-                    fp_msg_base *base = ( fp_msg_base * ) msg;
+                    [self log:"unknown to control channel"];
+                    /*fp_msg_base *base = ( fp_msg_base * ) msg;
                     if( base->type == 1 ) {
                         fp_msg_text *text = ( fp_msg_text * ) base;
                         action = text->text;
-                    }
+                    }*/
                 }
-                if( !strncmp( action, "done", 4 ) ) {
+                
+                unsigned long len = strlen( action );
+                
+                if( len == 4 && !strncmp( action, "done", 4 ) ) {
                     nng_msg_free( nmsg );
                     break;
                 }
-                if( !strncmp( action, "start", 5 ) ) [_framePasser startSending];
-                if( !strncmp( action, "stop", 4 ) ) [_framePasser stopSending];
-                if( !strncmp( action, "oneframe", 8 ) ) [_framePasser oneFrame];
+                if( len == 5 && !strncmp( action, "start",    5 ) ) {
+                    if( !sending ) {
+                        sending = 1;
+                        [_framePasser startSending];
+                    } else {
+                        [self log:"duplicate start"];
+                    }
+                }
+                if( len == 4 && !strncmp( action, "stop",     4 ) ) {
+                    if( sending ) {
+                        sending = 0;
+                        [_framePasser stopSending];
+                    } else {
+                        [self log:"duplicate stop"];
+                    }
+                }
+                if( len == 8 && !strncmp( action, "oneframe", 8 ) ) [_framePasser oneFrame];
             }
             else {
-                NSLog(@"xxr empty message");
+                //NSLog(@"xxr empty message");
+                [self log:"empty message"];
             }
             nng_msg_free( nmsg );
             
@@ -218,7 +258,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
         nng_setopt_int( _push, NNG_OPT_SENDTIMEO, 500);
         int r10 = nng_dial( _push, addr2, NULL, 0);
         if( r10 != 0 ) {
-            NSLog( @"xxr error connecting to %s : %d - %d", _outputIp, _outputPort, r10 );
+            //NSLog( @"xxr error connecting to %s : %d - %d", _outputIp, _outputPort, r10 );
         }
         _sending = true;
     } else {
@@ -228,7 +268,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
         nng_setopt_int( _push, NNG_OPT_SENDTIMEO, 500);
         int r10 = nng_listen( _push, addr2, NULL, 0);
         if( r10 != 0 ) {
-            NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _inputPort, r10 );
+            //NSLog( @"xxr error bindind on 127.0.0.1 : %d - %d", _inputPort, r10 );
         }
     }
 }
@@ -250,7 +290,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 _w = (int) CVPixelBufferGetWidth( pixelBuffer );
                 _h = (int) CVPixelBufferGetHeight( pixelBuffer );
                 
-                _destH = 1000;
+                _destH = 848;
                 _scale = (float) _destH / (float) _h;
                 _destW = (size_t) ( (float) _scale * (float) _w );
                 
@@ -261,40 +301,25 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
             
             bool force = false;
             
-            
-            /*uint32_t newCrc = 0;
-            size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
-            for( int i=0;i<planeCount;i++ ) {
-                size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
-                void *planeBase = CVPixelBufferGetBaseAddressOfPlane( pixelBuffer, i );
-                size_t planeH = CVPixelBufferGetHeightOfPlane( pixelBuffer, i );
-                size_t barSize = 50*bytes;
-                newCrc = crc32( newCrc, (const char *) planeBase + barSize, bytes*planeH - barSize );
-            }
-            
-            if( _forceFrame1 != *_forceFrame2 ) {
-                *_forceFrame2 = _forceFrame1;
-                force = true;
-            }*/
             char *planeBase = NULL;
             size_t planeSize = 0;
             
             uint32_t diff = 0;
             if( _lastPlaneBase ) {
-                size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
-                for( int i=0;i<planeCount;i++ ) {
+                //size_t planeCount = 1;//CVPixelBufferGetPlaneCount( pixelBuffer );
+                for( int i=0;i<1;i++ ) { //planeCount;i++ ) {
                     size_t bytes = CVPixelBufferGetBytesPerRowOfPlane( pixelBuffer, i );
                     planeBase = CVPixelBufferGetBaseAddressOfPlane( pixelBuffer, i );
-                    //char *lastPlaneBase = CVPixelBufferGetBaseAddressOfPlane( _lastPixelBuffer, i );
                     size_t planeH = CVPixelBufferGetHeightOfPlane( pixelBuffer, i );
-                    size_t barSize = 50*bytes;
-                    //newCrc = crc32( newCrc, (const char *) planeBase + barSize, bytes*planeH - barSize );
+                    //size_t barSize = 50*bytes;
                     planeSize = bytes * planeH;
-                    for( int i=0;i<planeSize; i++ ) {
-                        int dif = planeBase[i]-_lastPlaneBase[i];
+                    for( int j=0;j<planeSize; j++ ) {
+                        int dif = planeBase[j]-_lastPlaneBase[j];
                         if( dif < 0 ) dif = -dif;
                         diff += dif;
+                        if( diff > 0x3000 ) break;
                     }
+                    if( diff > 0x3000 ) break;
                 }
             }
             else {
@@ -307,8 +332,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 }
             }
             
-            if( diff > 0x9000 ) {
-                //*_forceFrame2 = _forceFrame1;
+            if( diff > 0x3000 ) {
                 force = true;
             }
 
@@ -316,12 +340,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
             double frameDif = _frameCount - _lastFrameCount;
             
             if( ( frameDif > 20 ) || force ) { //}|| ( *_crc != newCrc && *_crc2 != newCrc ) ) {
-                //if( _lastPlaneBase ) {
-                    //CVPixelBufferUnlockBaseAddress( _lastPixelBuffer, kCVPixelBufferLock_ReadOnly );
-                    //CFRelease( _lastMsg->sampleBuffer );
-                //}
-                //_lastMsg = msg;
-                //_lastPixelBuffer = pixelBuffer;
                 if( !_lastPlaneBase ) _lastPlaneBase = malloc( planeSize );
                 memcpy( _lastPlaneBase, planeBase, planeSize );
                 
@@ -330,8 +348,6 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 if( frameDif > 20 ) cause = 1;
                 if( force ) cause = 2;
                 
-                //*_crc2 = *_crc;
-                //*_crc = newCrc;
                 ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer];
                 
                 //CGColorSpaceRef linearColorSpace = CGColorSpaceCreateWithName( kCGColorSpaceLinearSRGB );
@@ -339,18 +355,20 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                                 
                 [_ciFilter setValue:ciImage forKey:@"inputImage"];
                 CIImage *newImage = _ciFilter.outputImage;
+                //CGColorSpaceRef deviceRGBColorSpace = newImage.colorSpace;
                 
                 //NSData *heifData = [context HEIFRepresentationOfImage:ciImage format:kCIFormatRGBA8 colorSpace:linearColorSpace options:@{} ];
-                NSData *jpegData = [context JPEGRepresentationOfImage:newImage colorSpace:deviceRGBColorSpace options:@{}];
+                NSDictionary *options = @{(NSString *)kCGImageDestinationLossyCompressionQuality:[NSNumber numberWithFloat:0.8]};
+                NSData *jpegData = [context
+                                    JPEGRepresentationOfImage:newImage
+                                    colorSpace:deviceRGBColorSpace
+                                    options:options];
                 
                 mynano__send_jpeg( _push,
                   (unsigned char *) jpegData.bytes, jpegData.length, _w, _h, (int) _destW, (int) _destH, cause, diff );
                 jpegData = nil;
                 ciImage = nil;
                 newImage = nil;
-            } else {
-                //CVPixelBufferUnlockBaseAddress( pixelBuffer, kCVPixelBufferLock_ReadOnly );
-                //CFRelease( msg->sampleBuffer );
             }
         }
         
@@ -358,7 +376,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
         CFRelease( msg->sampleBuffer );
     }
     else  {
-        NSLog( @"xxr other");
+        //NSLog( @"xxr other");
     }
     
     ciImage = nil;
@@ -400,7 +418,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 fp_msg_base *base = (fp_msg_base *) nng_msg_body( msg );
                 if( base->type == 1 ) {
                     fp_msg_text *text = ( fp_msg_text * ) base;
-                    NSLog(@"xxr Got message %s", text->text );
+                    //os_log( OS_LOG_DEFAULT, "xxr Got message %s", text->text );
                     if( !strncmp( text->text, "done", 4 ) ) {
                         nng_msg_free( msg );
                         break;
@@ -413,7 +431,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
                 }
             }
             else {
-                NSLog(@"xxr empty message");
+                //NSLog(@"xxr empty message");
             }
             nng_msg_free( msg );
         }
@@ -441,7 +459,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     [NSThread detachNewThreadSelector:@selector(entry:) toTarget:_framePasserInst withObject:nil];
     
     if( _controlPort ) {
-        _controlThreadInst = [[ControlThread alloc] init:_controlPort framePasser:_framePasserInst];
+        _controlThreadInst = [[ControlThread alloc] init:_controlPort logPort:_logPort framePasser:_framePasserInst];
         [NSThread detachNewThreadSelector:@selector(entry:) toTarget:_controlThreadInst withObject:nil];
         //_controlThread = [[NSThread alloc] initWithTarget:_controlThreadInst selector:@selector(entry:) object:nil];
     }
@@ -461,6 +479,7 @@ uint32_t crc32( uint32_t crc, const char *buf, size_t len ) {
     _outputIp = nil;
     _controlPort = 8351;
     _inputPort = 8352;
+    _logPort = 8353;
 }
 
 - (void)broadcastPaused {
@@ -522,7 +541,7 @@ void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long data
     nng_msg_append( msg, data, dataLen );
     
     int res = nng_sendmsg( push, msg, 0 );
-    if( res != 0 ) NSLog(@"xxr Send failed; res=%d", res );
+    //if( res != 0 ) NSLog(@"xxr Send failed; res=%d", res );
     
     //nng_msg_free( msg );
 }
@@ -531,7 +550,7 @@ void mynano__send_jpeg( nng_socket push, unsigned char *data, unsigned long data
     switch (sampleBufferType) {
         case RPSampleBufferTypeVideo:
             _frameNum++;
-            if( ( _frameNum % 3 ) == 0 ) {
+            if( ( _frameNum % 5 ) == 0 ) {
                 @autoreleasepool {
                     CFRetain( sampleBuffer);
                     
