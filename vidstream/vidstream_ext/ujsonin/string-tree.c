@@ -5,11 +5,11 @@
 #include<string.h>
 #include"red_black_tree.h"
 
-uint32_t fnv1a_len( char *str, int strlen ) {
+uint32_t fnv1a_len( char *str, long strlen ) {
 	uint32_t hval = 0;
     unsigned char *s = (unsigned char *) str;
 
-    for( int i=0;i<strlen;i++ ) {
+    for( long i=0;i<strlen;i++ ) {
     //while (*s) {
     	hval ^= (uint32_t)*s++;
 		hval *= ((uint32_t)0x01000193);
@@ -19,7 +19,7 @@ uint32_t fnv1a_len( char *str, int strlen ) {
     return hval;
 }
 
-void string_tree__delkey_len( string_tree *self, char *key, int keylen ) {
+void string_tree__delkey_len( string_tree *self, char *key, long keylen ) {
 	uint32_t hash = fnv1a_len( key, keylen );
 	rb_red_blk_node* rbnode = RBExactQuery( (rb_red_blk_tree *) self->tree, &hash );
 	
@@ -36,7 +36,7 @@ void string_tree__delkey_len( string_tree *self, char *key, int keylen ) {
 			if( keylen == node->strlen && !strncmp( node->str, key, node->strlen ) ) delete = 1;
 		}
 		else {
-			int nslen = strlen( node->str );
+			long nslen = strlen( node->str );
 			if( nslen == keylen && !strncmp( node->str, key, keylen ) ) delete = 1;
 		}
 		if( delete ) {
@@ -68,7 +68,7 @@ void string_tree__delete( string_tree *self ) {
 	free( self );
 }
 
-void *string_tree__get_len( string_tree *self, char *key, int keylen, char *dataType ) {
+void *string_tree__get_len( string_tree *self, char *key, long keylen, char *dataType ) {
 	//printf("Getting %s\n", key );
 	snode *node = string_tree__rawget_len( self, key, keylen );
 	if( !node ) {
@@ -79,7 +79,7 @@ void *string_tree__get_len( string_tree *self, char *key, int keylen, char *data
 	return node->data;
 }
 
-snode *string_tree__rawget_len( string_tree *self, char *key, int keylen ) {
+snode *string_tree__rawget_len( string_tree *self, char *key, long keylen ) {
 	//printf("Attempting to get node %s\n", key );
 	uint32_t hash = fnv1a_len( key, keylen );
 	rb_red_blk_node* rbnode = RBExactQuery( (rb_red_blk_tree *) self->tree, &hash );
@@ -92,7 +92,7 @@ snode *string_tree__rawget_len( string_tree *self, char *key, int keylen ) {
 			if( keylen == node->strlen && !strncmp( node->str, key, node->strlen ) ) return node;
 		}
 		else {
-			int nslen = strlen( node->str );
+			long nslen = strlen( node->str );
 			if( nslen == keylen && !strncmp( node->str, key, keylen ) ) return node;
 		}
 		node = node->next;
@@ -102,7 +102,7 @@ snode *string_tree__rawget_len( string_tree *self, char *key, int keylen ) {
 	return NULL;
 }
 
-void string_tree__store_len( string_tree *self, char *key, int keylen, void *node, char dataType ) {
+void string_tree__store_len( string_tree *self, char *key, long keylen, void *node, char dataType ) {
 	uint32_t hash = fnv1a_len( key, keylen );
 	snode *curnode = string_tree__rawget_len( self, key, keylen );
 	if( curnode ) {
@@ -145,7 +145,7 @@ void snode__delete( snode *self ) {
     }
 }
 
-snode *snode__new_len( char *newstr, int nstrlen, void *newdata, char dataType, snode *newnext ) {
+snode *snode__new_len( char *newstr, long nstrlen, void *newdata, char dataType, snode *newnext ) {
     snode *self = ( snode * ) malloc( sizeof( snode ) );
 	self->next = newnext;
 	self->str = newstr;
@@ -180,7 +180,7 @@ void xjr_arr__delete( xjr_arr *self ) {
 xjr_key_arr *xjr_key_arr__new() {
     xjr_key_arr *arr = ( xjr_key_arr * ) calloc( sizeof( xjr_key_arr ), 1 ); // calloc to ensure initial count is 0
     arr->items = malloc( sizeof( void * ) * XJR_KEY_ARR_MAX );
-    arr->sizes = malloc( sizeof( int ) * XJR_KEY_ARR_MAX );
+    arr->sizes = malloc( sizeof( long ) * XJR_KEY_ARR_MAX );
     arr->max = XJR_KEY_ARR_MAX;
     return arr;
 }
@@ -190,7 +190,7 @@ void xjr_key_arr__double( xjr_key_arr *self) {
     void *oldsizes = self->sizes;
     int max = self->max * 2;
     self->items = malloc( sizeof( char * ) * max );
-    self->sizes = malloc( sizeof( int ) * max );
+    self->sizes = malloc( sizeof( long ) * max );
     memcpy( self->items, olditems, sizeof( char * ) * self->max );
     memcpy( self->sizes, oldsizes, sizeof( int ) * self->max );
     free( olditems );

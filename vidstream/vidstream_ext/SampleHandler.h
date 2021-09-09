@@ -56,13 +56,14 @@ void mynano__send_text( nng_socket push, const char *text );
 @end
 
 @interface FramePasser : NSObject
--(FramePasser *)init:(int)inputPort outputIp:(char*)outputIp outputPort:(int)outputPort;
+-(FramePasser *)init:(int)inputPort outputIp:(char*)outputIp outputPort:(int)outputPort logPort:(int)logPort;
+-(void) log:(char *)str;
 -(void)dealloc;
 -(void)startSending;
 -(void)stopSending;
 -(void)oneFrame;
 -(void)entry:(id)param;
--(void)handle_buffer:(fp_msg_buffer *)msg wContext:(CIContext *)context;
+-(void)handle_buffer:(fp_msg_buffer *)msg;
 
 @property CIContext *context;
 @property int outputPort;
@@ -83,6 +84,11 @@ void mynano__send_text( nng_socket push, const char *text );
 @property double lastFrameCount;
 @property float scale;
 @property CIFilter *ciFilter;
+@property nng_socket control;
+@property int logPort;
+@property nng_socket log;
+@property CGColorSpaceRef colorSpace;
+@property CGAffineTransform resizeTransform;
 @end
 
 @interface ControlThread : NSObject
@@ -96,4 +102,5 @@ void mynano__send_text( nng_socket push, const char *text );
 @property nng_socket pull;//inproc termination
 @property int logPort;
 @property nng_socket log;
+@property bool logSetup;
 @end

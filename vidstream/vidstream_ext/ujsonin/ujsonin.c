@@ -9,7 +9,7 @@
 #include"ujsonin.h"
 
 node_hash *parse_with_default( char *file, char *def, char **d1, char **d2 ) {
-    int flen;
+    long flen;
     char *fdata = slurp_file( (char *) file, &flen );
     if( !fdata ) {
         printf("Could not open file '%s'\n", file );
@@ -17,14 +17,14 @@ node_hash *parse_with_default( char *file, char *def, char **d1, char **d2 ) {
     }
     int ferr;
     node_hash *froot = parse( fdata, flen, NULL, &ferr );
-    int dlen;
+    long dlen;
     char *ddata = NULL;
     int derr;
     
     node_hash *both;
     if( def ) {
         ddata = slurp_file( (char *) def, &dlen );
-        node_hash *droot = parse( ddata, dlen, NULL, &derr );
+        both = parse( ddata, dlen, NULL, &derr );
     }
     else {
         both = froot;
@@ -34,8 +34,7 @@ node_hash *parse_with_default( char *file, char *def, char **d1, char **d2 ) {
     return both;
 }
 
-char *slurp_file( char *filename, int *outlen ) { 
-    char *data;
+char *slurp_file( char *filename, long *outlen ) {
     FILE *fh = fopen( filename, "r" );
     fseek( fh, 0, SEEK_END );
     long int fileLength = ftell( fh );
@@ -53,14 +52,14 @@ jnode *jnode__new( int type ) {
     return self;
 }
 
-node_hash *node_hash__new() {
+node_hash *node_hash__new(void) {
     node_hash *self = ( node_hash * ) calloc( sizeof( node_hash ), 1 );
     self->type = 1;
     self->tree = string_tree__new();
     return self;
 }
 
-node_str *node_str__new( char *str, int len, char type ) {
+node_str *node_str__new( char *str, long len, char type ) {
     node_str *self = ( node_str * ) calloc( sizeof( node_str ), 1 );
     self->type = type; // 2 is str, 4 is number, 5 is a negative number
     self->str = str;
@@ -68,7 +67,7 @@ node_str *node_str__new( char *str, int len, char type ) {
     return self;
 }
 
-node_arr *node_arr__new() {
+node_arr *node_arr__new(void) {
     node_arr *self = ( node_arr * ) calloc( sizeof( node_arr ), 1 );
     self->type = 3;
     return self;
@@ -89,8 +88,8 @@ void node_hash__dump( node_hash *self, int depth ) {
     printf("{\n");
     for( int i=0;i<keys->count;i++ ) {
         char *key = keys->items[i];
-        int len = keys->sizes[i];
-        SPACES printf("\"%.*s\":",len,key);
+        long len = keys->sizes[i];
+        SPACES printf("\"%.*s\":",(int) len,key);
         jnode__dump( node_hash__get( self, key, len ), depth );
     }
     depth--;
@@ -101,7 +100,7 @@ void node_hash__delete( node_hash *self ) {
     xjr_key_arr *keys = string_tree__getkeys( self->tree );
     for( int i=0;i<keys->count;i++ ) {
         char *key = keys->items[i];
-        int len = keys->sizes[i];
+        long len = keys->sizes[i];
         jnode *sub = node_hash__get( self, key, len );
         if( sub->type == 1 ) node_hash__delete( (node_hash *) sub );
         else free( sub );
@@ -117,12 +116,12 @@ void node_hash__dump_to_makefile( node_hash *self, char *prefix ) {
     char pref2[ 100 ];
     for( int i=0;i<keys->count;i++ ) {
         char *key = keys->items[i];
-        int len = keys->sizes[i];
+        long len = keys->sizes[i];
         jnode *val = node_hash__get( self, key, len );
-        if( val->type != 1 ) printf("%s%.*s := ",prefix?prefix:"",len,key);
+        if( val->type != 1 ) printf("%s%.*s := ",prefix?prefix:"",(int) len,key);
         else {
-            if( prefix ) sprintf( pref2, "%s%.*s_", prefix, len, key );
-            else sprintf( pref2, "%.*s", prefix, len, key );
+            if( prefix ) sprintf( pref2, "%s%.*s_", prefix, (int) len, key );
+            else sprintf( pref2, "%s%.*s", prefix, (int) len, key );
             prefix = pref2;
         }
         jnode__dump_to_makefile( val, prefix );
@@ -142,10 +141,10 @@ void node_arr__dump( node_arr *self, int depth ) {
 
 void jnode__dump( jnode *self, int depth ) {
     if( self->type == 1 ) node_hash__dump( (node_hash *) self, depth+1 );
-    else if( self->type == 2 ) printf("\"%.*s\"\n", ( (node_str *) self )->len, ( (node_str *) self )->str );
+    else if( self->type == 2 ) printf("\"%.*s\"\n", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
     else if( self->type == 3 ) node_arr__dump( (node_arr *) self, depth+1 );
-    else if( self->type == 4 ) printf("%.*s\n", ( (node_str *) self )->len, ( (node_str *) self )->str );
-    else if( self->type == 5 ) printf("-%.*s\n", ( (node_str *) self )->len, ( (node_str *) self )->str );  
+    else if( self->type == 4 ) printf("%.*s\n", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
+    else if( self->type == 5 ) printf("-%.*s\n", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
     else if( self->type == 6 ) printf("true\n");
     else if( self->type == 7 ) printf("false\n");
     else if( self->type == 8 ) printf("false\n");
@@ -155,10 +154,10 @@ void jnode__dump_to_makefile( jnode *self, char *prefix ) {
     if( self->type == 1 ) node_hash__dump_to_makefile( (node_hash *) self, prefix );
     else {
         printf("\"");
-        if( self->type == 2 ) printf("%.*s", ( (node_str *) self )->len, ( (node_str *) self )->str );
+        if( self->type == 2 ) printf("%.*s", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
         //else if( self->type == 3 ) node_arr__dump_to_makefile( (node_arr *) self, 0 );
-        else if( self->type == 4 ) printf("%.*s", ( (node_str *) self )->len, ( (node_str *) self )->str );
-        else if( self->type == 5 ) printf("-%.*s", ( (node_str *) self )->len, ( (node_str *) self )->str );  
+        else if( self->type == 4 ) printf("%.*s", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
+        else if( self->type == 5 ) printf("-%.*s", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
         else if( self->type == 6 ) printf("true");
         else if( self->type == 7 ) printf("false");
         else if( self->type == 8 ) printf("false");
@@ -168,20 +167,20 @@ void jnode__dump_to_makefile( jnode *self, char *prefix ) {
 
 void jnode__dump_env( jnode *self ) {
     printf("\"");
-    if( self->type == 2 ) printf("%.*s", ( (node_str *) self )->len, ( (node_str *) self )->str );
-    else if( self->type == 4 ) printf("%.*s", ( (node_str *) self )->len, ( (node_str *) self )->str );
-    else if( self->type == 5 ) printf("-%.*s", ( (node_str *) self )->len, ( (node_str *) self )->str );  
+    if( self->type == 2 ) printf("%.*s", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
+    else if( self->type == 4 ) printf("%.*s", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
+    else if( self->type == 5 ) printf("-%.*s", (int) ( (node_str *) self )->len, ( (node_str *) self )->str );
     else if( self->type == 6 ) printf("true");
     else if( self->type == 7 ) printf("false");
     else if( self->type == 8 ) printf("null");
     printf("\"");
 }
 
-void node_hash__store( node_hash *self, char *key, int keyLen, jnode *node ) {
+void node_hash__store( node_hash *self, char *key, long keyLen, jnode *node ) {
     string_tree__store_len( self->tree, key, keyLen, (void *) node, 0 );
 }
 
-jnode *node_hash__get( node_hash *self, char *key, int keyLen ) {
+jnode *node_hash__get( node_hash *self, char *key, long keyLen ) {
     char type;
     return (jnode *) string_tree__get_len( self->tree, key, keyLen, &type );
 }
@@ -193,47 +192,47 @@ typedef struct handle_res_s {
     jnode *node;
 } handle_res;
 
-handle_res *handle_res__new() {
+handle_res *handle_res__new(void) {
     handle_res *self = ( handle_res * ) calloc( sizeof( handle_res ), 1 );
     return self;
 }
 
-handle_res *handle_true( char *data, int *pos ) {
+handle_res *handle_true( char *data, long *pos ) {
     jnode *node = jnode__new( 6 );
     handle_res *res = handle_res__new();
     res->node = node;
     return res;
 }
 
-handle_res *handle_false( char *data, int *pos ) {
+handle_res *handle_false( char *data, long *pos ) {
     jnode *node = jnode__new( 7 );
     handle_res *res = handle_res__new();
     res->node = node;
     return res;
 }
 
-handle_res *handle_null( char *data, int *pos ) {
+handle_res *handle_null( char *data, long *pos ) {
     jnode *node = jnode__new( 8 );
     handle_res *res = handle_res__new();
     res->node = node;
     return res;
 }
 
-typedef handle_res* (*ahandler)(char *, int * ); 
+typedef handle_res* (*ahandler)(char *, long * );
 
 string_tree *handlers;
-void ujsonin_init() {
+void ujsonin_init(void) {
     handlers = string_tree__new();
     string_tree__store_len( handlers, "true", 4, (void *) &handle_true, 0 );
     string_tree__store_len( handlers, "false", 5, (void *) &handle_false, 0 );
     string_tree__store_len( handlers, "null", 4, (void *) &handle_null, 0 );
 }
 
-node_hash *parse( char *data, int len, parser_state *beginState, int *err ) {
-    int pos = 1, keyLen, typeStart;
+node_hash *parse( char *data, long len, parser_state *beginState, int *err ) {
+    long pos = 1, keyLen = 0, typeStart = 0;
     int endstate = 0;
     uint8_t neg = 0;
-    char *keyStart, *strStart, let;
+    char *keyStart = NULL, *strStart = NULL, let = ' ';
     
     node_hash *root = node_hash__new();
     jnode *cur = ( jnode * ) root;
@@ -359,7 +358,7 @@ TypeX: SAFEGET(11)
     if( ( let >= '0' && let <= 9 ) || ( let >= 'a' && let <= 'z' ) ) goto TypeX;
     pos--; // go back a character; we've encountered a non-type character
     // Type name is done
-    int typeLen = pos - typeStart; 
+    long typeLen = pos - typeStart;
     // do something with the type
     char htype;
     ahandler handler = (ahandler) string_tree__get_len( handlers, &data[ typeStart ], typeLen, &htype );
@@ -406,7 +405,7 @@ Number1: SAFE(15)
 NumberX: SAFEGET(16)
     //if( let == '.' ) goto AfterDot;
     if( let < '0' || let > '9' ) {
-        int strLen = &data[pos-1] - strStart;
+        long strLen = &data[pos-1] - strStart;
         jnode *newStr = (jnode *) node_str__new( strStart, strLen, neg ? 5 : 4 );
         if( cur->type == 1 ) {
             node_hash__store( (node_hash *) cur, keyStart, keyLen, newStr );
@@ -435,7 +434,7 @@ String1: SAFEGET(17)
     strStart = &data[pos-1];
 StringX: SAFEGET(18)
     if( let == '"' ) {
-       int strLen = &data[pos-1] - strStart;
+       long strLen = &data[pos-1] - strStart;
        jnode *newStr = (jnode *) node_str__new( strStart, strLen, 2 );
        if( cur->type == 1 ) {
            node_hash__store( (node_hash *) cur, keyStart, keyLen, newStr );

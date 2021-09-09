@@ -21,7 +21,7 @@ typedef struct node_hash_s { NODEBASE
 
 typedef struct node_str_s { NODEBASE
     char *str;
-    int len;
+    long len;
 } node_str;
 
 typedef struct node_arr_s { NODEBASE
@@ -34,11 +34,11 @@ typedef struct parser_state_s {
     int state;
 } parser_state;
 
-node_hash *parse( char *data, int len, parser_state *beginState, int *err );
-jnode *node_hash__get( node_hash *self, char *key, int keyLen );
+node_hash *parse( char *data, long len, parser_state *beginState, int *err );
+jnode *node_hash__get( node_hash *self, char *key, long keyLen );
 void jnode__dump( jnode *self, int depth );
-char *slurp_file( char *filename, int *outlen );
-void ujsonin_init();
+char *slurp_file( char *filename, long *outlen );
+void ujsonin_init(void);
 void jnode__dump_env( jnode *self );
 void node_hash__dump_to_makefile( node_hash *self, char *prefix );
 void node_hash__delete( node_hash *self );

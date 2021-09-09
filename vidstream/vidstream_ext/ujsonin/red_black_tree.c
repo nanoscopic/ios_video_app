@@ -184,7 +184,7 @@ rb_red_blk_node* TreePredecessor(rb_red_blk_tree* tree, rb_red_blk_node* x) {
 
 void TreeForEach(rb_red_blk_tree *tree, void (*Func)(void*), rb_red_blk_node *x) {
     rb_red_blk_node* nil = tree->nil;
-    rb_red_blk_node* root = tree->root;
+    //rb_red_blk_node* root = tree->root;
     if( !x ) x = tree->root->left;
     if( x->left != nil ) TreeForEach( tree, Func, x->left );
     Func( x->info );
@@ -193,7 +193,7 @@ void TreeForEach(rb_red_blk_tree *tree, void (*Func)(void*), rb_red_blk_node *x)
 
 void TreeForEach1p(rb_red_blk_tree *tree, void (*Func)(void*,void*), void *param, rb_red_blk_node *x) {
     rb_red_blk_node* nil = tree->nil;
-    rb_red_blk_node* root = tree->root;
+    //rb_red_blk_node* root = tree->root;
     if( !x ) x = tree->root->left;
     if( x->left != nil ) TreeForEach1p( tree, Func, param, x->left );
     Func( x->info, param );

@@ -22,7 +22,8 @@
     view.backgroundColor = color;
     
     UIColor *color2 = [UIColor colorWithRed:0/255.f green:200/255.f blue:0/255.f alpha:1.0];
-    RPSystemBroadcastPickerView *picker = [[RPSystemBroadcastPickerView alloc] initWithFrame:CGRectMake(0,40,320,200)];
+    
+    RPSystemBroadcastPickerView *picker = [[RPSystemBroadcastPickerView alloc] initWithFrame:view.frame];//CGRectMake(0,40,320,200)];
     
     NSString *bi = [[NSBundle mainBundle] bundleIdentifier];
     NSString *ebi = [bi stringByAppendingString:@".extension"];
@@ -37,9 +38,9 @@
     [btn setImage: playImg forState:UIControlStateNormal];
     [view addSubview: picker];
     
+    //[btn sendActionsForControlEvents:UIControlEventAllTouchEvents];
     [self.view addSubview: view];
-    
-    
+    //self.view = view;
 }
 
 @end
