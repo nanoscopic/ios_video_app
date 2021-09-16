@@ -34,8 +34,11 @@
     UIButton *btn = picker.subviews[0];
     [btn setTitle:@"  Broadcast Selector" forState:UIControlStateNormal];
     [btn setAccessibilityIdentifier:@"Broadcast Selector"];
-    UIImage *playImg = [UIImage systemImageNamed: @"play"];
-    [btn setImage: playImg forState:UIControlStateNormal];
+    
+    // The system image named play is not available before iOS 13
+    //UIImage *playImg = [UIImage systemImageNamed: @"play"];
+    //[btn setImage: playImg forState:UIControlStateNormal];
+    
     [view addSubview: picker];
     
     //[btn sendActionsForControlEvents:UIControlEventAllTouchEvents];
